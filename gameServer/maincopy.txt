@@ -1,12 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
-	"sync"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -21,14 +17,13 @@ type myConnection struct {
 }
 
 type myKoordinates struct {
-	X     int `json:"x"`
-	Y     int `json:"y"`
-	Color int `json:"color"`
+	Key uuid.UUID `json:"key"`
+	X   int       `json:"x"`
+	Y   int       `json:"y"`
 }
 
 var listConnections []myConnection
 var listKoordinates map[uuid.UUID]myKoordinates
-var myMutex sync.RWMutex
 
 var upgrader = websocket.Upgrader{
 	Subprotocols: []string{"demo-chat"},
@@ -45,7 +40,6 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	randomColor := rand.Intn(10)
 	id := uuid.New()
 	s := myConnection{Key: id, Conn: conn}
 	listConnections = append(listConnections, s)
@@ -61,12 +55,13 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		if messageType == -1 {
 			break
 		}
-		koordinates := myKoordinates{}
-		json.Unmarshal([]byte(message), &koordinates)
-		koordinates.Color = randomColor
-		myMutex.Lock()
-		listKoordinates[id] = koordinates
-		myMutex.Unlock()
+
+		fmt.Printf("Nachricht erhalten: %d %s\n", messageType, message)
+
+		for _, singleConn := range listConnections {
+			fmt.Printf("sendin to: %s\n", singleConn.Key)
+			singleConn.Conn.WriteMessage(1, []byte(id.String()+": "+string(message)))
+		}
 	}
 }
 
@@ -78,7 +73,6 @@ func removeUnusedConnection(key uuid.UUID) {
 			listConnections = remove(listConnections, idx)
 		}
 	}
-	delete(listKoordinates, key)
 
 }
 
@@ -88,28 +82,7 @@ func remove(s []myConnection, i int) []myConnection {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	listKoordinates = make(map[uuid.UUID]myKoordinates)
-	myMutex = sync.RWMutex{}
-	ticker := time.NewTicker(time.Second / 100)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				// do stuff
-				// fmt.Printf("thread")
-				j, _ := json.Marshal(listKoordinates)
-				for _, singleConn := range listConnections {
-					singleConn.Conn.WriteMessage(1, j)
-				}
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
-
 	r := gin.New()
 
 	config := cors.DefaultConfig()
@@ -124,10 +97,6 @@ func main() {
 
 	r.GET("/players", func(c *gin.Context) {
 		c.JSON(http.StatusOK, listConnections)
-	})
-
-	r.GET("/test", func(c *gin.Context) {
-		c.JSON(http.StatusOK, listKoordinates)
 	})
 
 	fmt.Println("WebSocket-Server gestartet. Lausche auf http://localhost:8080/ws")

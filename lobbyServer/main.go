@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,10 @@ var highscore = []Score{
 
 func main() {
 	r := gin.New()
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowHeaders = []string{"Content-Type", "Content-Length", "Accept-Encoding", "Authorization", "Cache-Control"}
+	r.Use(cors.New(config))
 
 	r.GET("/listServer", func(c *gin.Context) {
 		c.JSON(http.StatusOK, servers)
@@ -41,6 +46,18 @@ func main() {
 
 	r.GET("/listScore", func(c *gin.Context) {
 		c.JSON(http.StatusOK, highscore)
+	})
+
+	r.GET("/getUrl/:id", func(c *gin.Context) {
+		url := "invalidID"
+		id := c.Param("id")
+		for _, v := range servers {
+			if v.ID.String() == id {
+				url = v.Address
+			}
+		}
+
+		c.JSON(http.StatusOK, url)
 	})
 
 	r.Run(":8090")

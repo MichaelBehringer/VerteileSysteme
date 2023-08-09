@@ -1,24 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import {Route, Routes} from "react-router-dom";
+import MainMenue from "./components/MainMenue";
+import Lobby from "./components/Lobby";
+import MyCircle from "./components/MyCircle";
+import GameContainer from "./components/GameContainer";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+  return (    
+    <div>
+      <h1>Hallo zu unserem spiel 🦚</h1>
+      <Routes>
+        <Route path="/" element={<MainMenue />} />
+        <Route path="/lobby" element={<Lobby/>}/>
+        <Route path="/game/:id" element={<GameContainer />}/>
+        <Route path="/kreis" element={<MyCircle />}/>
+      </Routes>
+      </div>
   );
 }
 

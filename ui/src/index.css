@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.karo-container {
+  background: linear-gradient(45deg, #ffffff 25%, transparent 25%) -16px 0,
+  linear-gradient(-45deg, #ffffff 25%, transparent 25%) -16px 0,
+  linear-gradient(45deg, transparent 75%, #ffffff 75%),
+  linear-gradient(-45deg, transparent 75%, #ffffff 75%);
+background-size: 32px 32px;
+background-color: #f0f0f0; /* Hintergrundfarbe für den Rest */
+}

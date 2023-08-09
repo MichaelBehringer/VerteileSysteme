@@ -4,12 +4,12 @@ import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 const width = window.innerWidth;
 const height = window.innerHeight;
 
-const colors = ["red", "green", "blue", "yellow", "silver", "maroon", "purple", "lime", "olive", "teal", "aqua"]
+const colors = ["red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua"]
 
 function createCircle(Pcx, Pcy, Pcolor, name, size) {
   return <>
-    <circle key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="white" stroke-width="3" fill={colors[Pcolor]} />
-    <text key={"t"+name} x={Pcx - 50} y={Pcy + 20 + size} fontSize="20" fill="white">{name}</text>
+    <circle key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" stroke-width="3" fill={colors[Pcolor]} />
+    <text key={"t"+name} x={Pcx - 50} y={Pcy + 20 + size} fontSize="20" fill="black">{name}</text>
   </>
 }
 
@@ -19,8 +19,7 @@ function createCircleNpc(Pcx, Pcy, Pcolor, name) {
 
 function MyCircleSocket(props) {
   const svgRef = useRef()
-  const { sendMessage, lastMessage, readyState } = useWebSocket(props.serverUrl);
-  const [playerPos, setPlayerPos] = useState({ x: 100, y: 100 });
+  const { sendMessage, lastMessage } = useWebSocket(props.serverUrl);
   const [playerObjects, setPlayerObjects] = useState([]);
   const [npcObjects, setNpcObjects] = useState([]);
 
@@ -45,7 +44,7 @@ function MyCircleSocket(props) {
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'black'
+    // backgroundColor: 'black'
   };
 
   useEffect(() => {
@@ -68,14 +67,13 @@ function MyCircleSocket(props) {
     }
   }
 
-  function updatePosition(point) {
-    setPlayerPos({x: point.x, y: point.y})    
+  function updatePosition(point) {   
     sendMessage(JSON.stringify({x: point.x, y: point.y}))
   }
 
   return (
     <div>
-      <svg ref={svgRef} style={fullScreen} width={width} height={height}>
+      <svg className="karo-container" bac ref={svgRef} style={fullScreen} width={width} height={height}>
         {/* {createCircle(playerPos.x, playerPos.y, "blue", "player")}
         {createCircle(500, 700, "red", "bot")} */}
         {npcObjects.map(obj =>

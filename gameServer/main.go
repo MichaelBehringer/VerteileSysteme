@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -21,10 +22,10 @@ type connectionObj struct {
 }
 
 type playerObj struct {
-	X     int `json:"x"`
-	Y     int `json:"y"`
-	Color int `json:"c"`
-	Size  int `json:"s"`
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
+	Color int     `json:"c"`
+	Size  int     `json:"s"`
 }
 
 type npcObj struct {
@@ -44,6 +45,26 @@ var listNpcKoordinates map[uuid.UUID]npcObj
 var myMutex sync.RWMutex
 var myNpcMutex sync.RWMutex
 
+func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (float64, float64) {
+	vectorX := xEnd - xStart
+	vectorY := yEnd - yStart
+
+	lenghtVector := math.Sqrt(math.Pow(vectorX, 2) + math.Pow(vectorY, 2))
+	if lenghtVector < 1 {
+		return xStart, yStart
+	}
+
+	normalizedX := vectorX / lenghtVector
+	normalizedY := vectorY / lenghtVector
+
+	stepSize := 2
+
+	newX := xStart + normalizedX*float64(stepSize)
+	newY := yStart + normalizedY*float64(stepSize)
+
+	return newX, newY
+}
+
 // copied from stackoverflow, converts websocket
 var upgrader = websocket.Upgrader{
 	Subprotocols: []string{"demo-chat"},
@@ -61,7 +82,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	// color for player
-	randomColor := rand.Intn(10)
+	randomColor := rand.Intn(9)
 	// color for player
 	size := 20
 	// id for player
@@ -70,6 +91,8 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	s := connectionObj{Key: id, Conn: conn}
 	listConnections = append(listConnections, s)
 	defer removeUnusedConnection(id)
+
+	listPlayerKoordinates[id] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: randomColor, Size: 20}
 
 	// debug
 	fmt.Printf("New User: %s\n", id)
@@ -86,20 +109,36 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		// create koordinates obj; parse recived koordinates to obj; mutex needed because of multithreding; update koordinates in hashmap
 		koordinates := playerObj{}
 		json.Unmarshal([]byte(message), &koordinates)
-		koordinates.Color = randomColor
-		koordinates.Size = size
+		// koordinates.Color = randomColor
 		myMutex.Lock()
-		listPlayerKoordinates[id] = koordinates
+		oldPlayerKoords := listPlayerKoordinates[id]
+		newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, koordinates.X, koordinates.Y)
+		oldPlayerKoords.X = newX
+		oldPlayerKoords.Y = newY
+		oldPlayerKoords.Size = size
+		listPlayerKoordinates[id] = oldPlayerKoords
 		myMutex.Unlock()
 
 		myNpcMutex.Lock()
 		for key, value := range listNpcKoordinates {
-			if (value.X+size/2 >= koordinates.X && value.X-size/2 <= koordinates.X) && (value.Y+size/2 >= koordinates.Y && value.Y-size/2 <= koordinates.Y) {
+			if (float64(value.X+size/2) >= oldPlayerKoords.X && float64(value.X-size/2) <= oldPlayerKoords.X) && (float64(value.Y+size/2) >= oldPlayerKoords.Y && float64(value.Y-size/2) <= oldPlayerKoords.Y) {
 				delete(listNpcKoordinates, key)
 				size++
 			}
 		}
 		myNpcMutex.Unlock()
+
+		myMutex.Lock()
+		for key, value := range listPlayerKoordinates {
+			if key != id && (value.X+float64((size+value.Size)/2) >= oldPlayerKoords.X && value.X-float64((size+value.Size)/2) <= oldPlayerKoords.X) && (value.Y+float64((size+value.Size)/2) >= oldPlayerKoords.Y && value.Y-float64((size+value.Size)/2) <= oldPlayerKoords.Y) {
+				if size > value.Size {
+					listPlayerKoordinates[key] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: value.Color, Size: 20}
+				} else {
+					listPlayerKoordinates[id] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: randomColor, Size: 20}
+				}
+			}
+		}
+		myMutex.Unlock()
 	}
 }
 
@@ -129,10 +168,10 @@ func main() {
 	listNpcKoordinates = make(map[uuid.UUID]npcObj)
 
 	playerUUID, _ := uuid.Parse("00000000-0000-0000-0000-000000000000")
-	listPlayerKoordinates[playerUUID] = playerObj{X: -1, Y: -1, Color: 0, Size: 1}
+	listPlayerKoordinates[playerUUID] = playerObj{X: -1000, Y: -1000, Color: 0, Size: 1}
 
 	npcUUID, _ := uuid.Parse("00000000-0000-0000-0000-000000000001")
-	listNpcKoordinates[npcUUID] = npcObj{X: -1, Y: -1, Color: 0}
+	listNpcKoordinates[npcUUID] = npcObj{X: -1000, Y: -1000, Color: 0}
 
 	// thread for broadcast
 	myMutex = sync.RWMutex{}

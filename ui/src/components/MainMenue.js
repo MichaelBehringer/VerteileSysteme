@@ -35,7 +35,15 @@ function MainMenue() {
         block
         onClick={() => navigate("/characterCreation")}
       >
-        Kreise
+        Charakter Erstellung
+      </Button>
+      <Button
+        className="ant-btn"
+        type="primary"
+        block
+        onClick={() => navigate("/login")} 
+      >
+        Einloggen
       </Button>
     </div>
   );

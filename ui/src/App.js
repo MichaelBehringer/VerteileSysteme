@@ -4,6 +4,7 @@ import Lobby from "./components/Lobby";
 import MyCircle from "./components/MyCircle";
 import GameContainer from "./components/GameContainer";
 import CharacterCreation from "./components/CharacterCreation";
+import Login from "./components/Login";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/game/:id" element={<GameContainer />}/>
         <Route path="/kreis" element={<MyCircle />}/>
         <Route path="/CharacterCreation" element={<CharacterCreation />}/>
+        <Route path="/login" element={<Login />} />
       </Routes>
     </div>
   );

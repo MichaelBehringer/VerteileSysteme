@@ -9,6 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Player struct {
+	ID       uuid.UUID `json:"id"`
+	Color    string    `json:"color"`
+	Username string    `json:"name"`
+}
+
 type Server struct {
 	ID          uuid.UUID `json:"id"`
 	Address     string    `json:"address"`
@@ -46,6 +52,15 @@ func main() {
 
 	r.GET("/listScore", func(c *gin.Context) {
 		c.JSON(http.StatusOK, highscore)
+	})
+
+	r.GET("/player/:id", func(c *gin.Context) {
+		var dummyPlayer = Player{ID: uuid.New(), Username: "Michael", Color: "blue"}
+		c.JSON(http.StatusOK, dummyPlayer)
+	})
+
+	r.POST("/player", func(c *gin.Context) {
+		c.Status(http.StatusOK)
 	})
 
 	r.GET("/getUrl/:id", func(c *gin.Context) {

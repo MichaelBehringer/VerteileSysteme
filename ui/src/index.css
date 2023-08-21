@@ -1,22 +1,58 @@
+/* Reset and global styles */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Your existing .karo-container styles can go here */
+
+/* Styles for the provided content */
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #333; /* Dark gray background */
+  flex-direction: column;
 }
 
-.karo-container {
-  background: linear-gradient(45deg, #ffffff 25%, transparent 25%) -16px 0,
-  linear-gradient(-45deg, #ffffff 25%, transparent 25%) -16px 0,
-  linear-gradient(45deg, transparent 75%, #ffffff 75%),
-  linear-gradient(-45deg, transparent 75%, #ffffff 75%);
-background-size: 32px 32px;
-background-color: #f0f0f0; /* Hintergrundfarbe für den Rest */
+h1 {
+  color: #fff; /* White text color */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.main-menu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ant-btn {
+  display: flex; /* Add this line */
+  align-items: center; /* Add this line */
+  justify-content: center; /* Center text horizontally */
+  margin: 10px;
+  padding: 12px 24px; /* Increased padding */
+  font-size: 16px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 30px; /* Rounded corners */
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+}
+
+/* Rest of your CSS remains unchanged */
+
+
+.ant-btn:hover {
+  background-color: #0056b3;
+  transform: scale(1.05); /* Slight scale-up on hover */
 }

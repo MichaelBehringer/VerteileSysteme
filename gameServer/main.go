@@ -83,7 +83,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 
 	// color for player
 	randomColor := rand.Intn(9)
-	// color for player
+	// size for player
 	size := 20
 	// id for player
 	id := uuid.New()
@@ -99,7 +99,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("WebSocket-Verbindung hergestellt")
 
 	for {
-		// Message recive
+		// Message receive
 		messageType, message, _ := conn.ReadMessage()
 		// messageType == -1 connection was closed
 		if messageType == -1 {
@@ -167,10 +167,10 @@ func main() {
 	listPlayerKoordinates = make(map[uuid.UUID]playerObj)
 	listNpcKoordinates = make(map[uuid.UUID]npcObj)
 
-	playerUUID, _ := uuid.Parse("00000000-0000-0000-0000-000000000000")
+	playerUUID, _ := uuid.Parse("Player")
 	listPlayerKoordinates[playerUUID] = playerObj{X: -1000, Y: -1000, Color: 0, Size: 1}
 
-	npcUUID, _ := uuid.Parse("00000000-0000-0000-0000-000000000001")
+	npcUUID, _ := uuid.Parse("NPC")
 	listNpcKoordinates[npcUUID] = npcObj{X: -1000, Y: -1000, Color: 0}
 
 	// thread for broadcast

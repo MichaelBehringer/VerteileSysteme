@@ -3,6 +3,7 @@ import MainMenue from "./components/MainMenue";
 import Lobby from "./components/Lobby";
 import MyCircle from "./components/MyCircle";
 import GameContainer from "./components/GameContainer";
+import CharacterCreation from "./components/CharacterCreation";
 
 function App() {
   return (    
@@ -13,6 +14,7 @@ function App() {
         <Route path="/lobby" element={<Lobby/>}/>
         <Route path="/game/:id" element={<GameContainer />}/>
         <Route path="/kreis" element={<MyCircle />}/>
+        <Route path="/CharacterCreation" element={<CharacterCreation />}/>
       </Routes>
       </div>
   );

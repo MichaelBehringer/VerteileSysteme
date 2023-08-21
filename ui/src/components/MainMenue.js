@@ -8,6 +8,7 @@ function MainMenue() {
         <Button style={{margin: '10px'}} type="primary" block onClick={()=>alert('gibts noch nicht')}>Schnelles spiel</Button>
         <Button style={{margin: '10px'}} type="primary" block onClick={()=>navigate("/lobby")}>Lobby suche</Button>
         <Button style={{margin: '10px'}} type="primary" block onClick={()=>navigate("/kreis")}>Kreise</Button>
+        <Button style={{margin: '10px'}} type="primary" block onClick={()=>navigate("/characterCreation")}>Character Creation</Button>
     </div>
   );
 }

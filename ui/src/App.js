@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Link } from "react-router-dom";
 import MainMenue from "./components/MainMenue";
 import Lobby from "./components/Lobby";
 import MyCircle from "./components/MyCircle";
@@ -9,6 +9,9 @@ import Login from "./components/Login";
 function App() {
   return (
     <div className="app-container">
+      <Link to="/" className="back-to-main-button">
+       🦚
+      </Link>
       <h1>Hallo zu unserem Spiel 🦚</h1>
       <Routes>
         <Route path="/" element={<MainMenue />} />

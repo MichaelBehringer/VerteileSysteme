@@ -49,10 +49,26 @@ h1 {
   text-align: center;
 }
 
-/* Rest of your CSS remains unchanged */
 
 
 .ant-btn:hover {
   background-color: #0056b3;
   transform: scale(1.05); /* Slight scale-up on hover */
+}
+
+.back-to-main-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 50%; /* Runder Button */
 }

@@ -13,8 +13,8 @@ function createCircle(Pcx, Pcy, Pcolor, name, size) {
   </>
 }
 
-function createCircleNpc(Pcx, Pcy, Pcolor, name) {
-  return <circle key={"c"+name} cx={Pcx} cy={Pcy} r="10" stroke={colors[Pcolor]} stroke-width="3" fill={colors[Pcolor]} />
+function createCircleNpc(Pcx, Pcy, Pcolor) {
+  return <circle key={"c"+Pcx+"-"+Pcy} cx={Pcx} cy={Pcy} r="10" stroke={colors[Pcolor]} stroke-width="3" fill={colors[Pcolor]} />
 }
 
 function MyCircleSocket(props) {
@@ -26,15 +26,9 @@ function MyCircleSocket(props) {
   useEffect(() => {
     if (lastMessage !== null) {
       const messageData = JSON.parse(lastMessage.data)
-      const objs = Object.keys(messageData)
-      const e = objs.slice(1).map((e, i) => {
-        return {key: e, x: messageData[e].x, y: messageData[e].y, color: messageData[e].c, size: messageData[e].s}
-      })
-      if(objs[0]==="00000000-0000-0000-0000-000000000000") {
-        setPlayerObjects(e)
-      } else {
-        setNpcObjects(e)
-      }
+      console.log(messageData)
+      setPlayerObjects(messageData.player)
+      setNpcObjects(messageData.npc)
     }
   }, [lastMessage]);
 
@@ -77,10 +71,10 @@ function MyCircleSocket(props) {
         {/* {createCircle(playerPos.x, playerPos.y, "blue", "player")}
         {createCircle(500, 700, "red", "bot")} */}
         {npcObjects.map(obj =>
-          createCircleNpc(obj.x, obj.y, obj.color, obj.key)
+          createCircleNpc(obj.x, obj.y, obj.color)
           )}
           {playerObjects.map(obj =>
-            createCircle(obj.x, obj.y, obj.color, obj.key, obj.size)
+            createCircle(obj.x, obj.y, obj.color, obj.id, obj.size)
             )}
       </svg>
     </div>

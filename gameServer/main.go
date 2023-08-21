@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -21,29 +20,44 @@ type connectionObj struct {
 	Conn *websocket.Conn `json:"connection"`
 }
 
-type playerObj struct {
+type gameObj struct {
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
 	Color int     `json:"c"`
 	Size  int     `json:"s"`
 }
 
-type npcObj struct {
-	X     int `json:"x"`
-	Y     int `json:"y"`
-	Color int `json:"c"`
+type targetObj struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 type transfairObj struct {
-	Player map[uuid.UUID]playerObj `json:"player"`
-	Npc    map[uuid.UUID]npcObj    `json:"npc"`
+	Player []transfairPlayer `json:"player"`
+	NPC    []transfaiNpc     `json:"npc"`
+}
+
+type transfairPlayer struct {
+	Id    uuid.UUID `json:"id"`
+	Color int       `json:"color"`
+	Size  int       `json:"size"`
+	X     float64   `json:"x"`
+	Y     float64   `json:"y"`
+}
+
+type transfaiNpc struct {
+	Color int     `json:"color"`
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
 }
 
 var listConnections []connectionObj
-var listPlayerKoordinates map[uuid.UUID]playerObj
-var listNpcKoordinates map[uuid.UUID]npcObj
-var myMutex sync.RWMutex
-var myNpcMutex sync.RWMutex
+var listPlayerKoordinates [30]gameObj
+var listNpcKoordinates [100]gameObj
+var arrPlayerTarget [30]targetObj
+var mapIdToPlayer map[uuid.UUID]int
+
+var stack *Stack
 
 func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (float64, float64) {
 	vectorX := xEnd - xStart
@@ -73,6 +87,10 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func randFloat(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
 func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -83,62 +101,32 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 
 	// color for player
 	randomColor := rand.Intn(9)
-	// size for player
-	size := 20
-	// id for player
-	id := uuid.New()
-	// create player object and add to connectionList; delete from list on function end
-	s := connectionObj{Key: id, Conn: conn}
-	listConnections = append(listConnections, s)
-	defer removeUnusedConnection(id)
+	uuidNode := uuid.New()
+	playerId, _ := stack.Pop()
+	defer stack.Push(playerId)
 
-	listPlayerKoordinates[id] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: randomColor, Size: 20}
+	mapIdToPlayer[uuidNode] = playerId
+
+	// create player object and add to connectionList; delete from list on function end
+	s := connectionObj{Key: uuidNode, Conn: conn}
+	listConnections = append(listConnections, s)
+	defer removeUnusedConnection(uuidNode)
+
+	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, 1000), Y: randFloat(0, 700), Color: randomColor, Size: 20}
 
 	// debug
-	fmt.Printf("New User: %s\n", id)
+	fmt.Printf("New User: %d:-- %s\n", playerId, uuidNode)
 	fmt.Println("WebSocket-Verbindung hergestellt")
 
 	for {
-		// Message receive
 		messageType, message, _ := conn.ReadMessage()
-		// messageType == -1 connection was closed
 		if messageType == -1 {
 			break
 		}
 
-		// create koordinates obj; parse recived koordinates to obj; mutex needed because of multithreding; update koordinates in hashmap
-		koordinates := playerObj{}
+		koordinates := targetObj{}
 		json.Unmarshal([]byte(message), &koordinates)
-		// koordinates.Color = randomColor
-		myMutex.Lock()
-		oldPlayerKoords := listPlayerKoordinates[id]
-		newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, koordinates.X, koordinates.Y)
-		oldPlayerKoords.X = newX
-		oldPlayerKoords.Y = newY
-		oldPlayerKoords.Size = size
-		listPlayerKoordinates[id] = oldPlayerKoords
-		myMutex.Unlock()
-
-		myNpcMutex.Lock()
-		for key, value := range listNpcKoordinates {
-			if (float64(value.X+size/2) >= oldPlayerKoords.X && float64(value.X-size/2) <= oldPlayerKoords.X) && (float64(value.Y+size/2) >= oldPlayerKoords.Y && float64(value.Y-size/2) <= oldPlayerKoords.Y) {
-				delete(listNpcKoordinates, key)
-				size++
-			}
-		}
-		myNpcMutex.Unlock()
-
-		myMutex.Lock()
-		for key, value := range listPlayerKoordinates {
-			if key != id && (value.X+float64((size+value.Size)/2) >= oldPlayerKoords.X && value.X-float64((size+value.Size)/2) <= oldPlayerKoords.X) && (value.Y+float64((size+value.Size)/2) >= oldPlayerKoords.Y && value.Y-float64((size+value.Size)/2) <= oldPlayerKoords.Y) {
-				if size > value.Size {
-					listPlayerKoordinates[key] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: value.Color, Size: 20}
-				} else {
-					listPlayerKoordinates[id] = playerObj{X: float64(rand.Intn(1000)), Y: float64(rand.Intn(700)), Color: randomColor, Size: 20}
-				}
-			}
-		}
-		myMutex.Unlock()
+		arrPlayerTarget[playerId] = koordinates
 	}
 }
 
@@ -151,7 +139,8 @@ func removeUnusedConnection(key uuid.UUID) {
 			listConnections = remove(listConnections, idx)
 		}
 	}
-	delete(listPlayerKoordinates, key)
+	// delete(listPlayerKoordinates, key)
+	delete(mapIdToPlayer, key)
 
 }
 
@@ -160,79 +149,61 @@ func remove(s []connectionObj, i int) []connectionObj {
 	return s[:len(s)-1]
 }
 
+func initNPCs() {
+	for i := 0; i < 100; i++ {
+		npc := gameObj{X: randFloat(0, 1000), Y: randFloat(0, 700), Color: rand.Intn(10)}
+		listNpcKoordinates[i] = npc
+	}
+}
+
+func initStack() {
+	for i := 0; i < 30; i++ {
+		stack.Push(i)
+	}
+}
+
+func movePlayer() {
+	for range time.Tick(time.Second / 100) {
+		for _, value := range mapIdToPlayer {
+			oldPlayerKoords := listPlayerKoordinates[value]
+			playerTarget := arrPlayerTarget[value]
+			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X, playerTarget.Y)
+			listPlayerKoordinates[value].X = newX
+			listPlayerKoordinates[value].Y = newY
+		}
+	}
+}
+
+func checkCollission() {
+	for range time.Tick(time.Second / 10) {
+		npcCollision()
+		playerCollision()
+	}
+}
+
+func sendUpdate() {
+	for range time.Tick(time.Second / 100) {
+		var objPlayer []transfairPlayer
+		var objNpc []transfaiNpc
+		for key, value := range mapIdToPlayer {
+			player := listPlayerKoordinates[value]
+			objPlayer = append(objPlayer, transfairPlayer{Id: key, Color: player.Color, Size: player.Size, X: player.X, Y: player.Y})
+		}
+
+		for _, value := range listNpcKoordinates {
+			objNpc = append(objNpc, transfaiNpc{Color: value.Color, X: value.X, Y: value.Y})
+		}
+
+		objT := transfairObj{Player: objPlayer, NPC: objNpc}
+		for _, singleConn := range listConnections {
+			singleConn.Conn.WriteJSON(objT)
+		}
+	}
+}
+
 func main() {
-	// srand
-	rand.Seed(time.Now().UnixNano())
-	// initialize hashmap and mutex
-	listPlayerKoordinates = make(map[uuid.UUID]playerObj)
-	listNpcKoordinates = make(map[uuid.UUID]npcObj)
-
-	playerUUID, _ := uuid.Parse("Player")
-	listPlayerKoordinates[playerUUID] = playerObj{X: -1000, Y: -1000, Color: 0, Size: 1}
-
-	npcUUID, _ := uuid.Parse("NPC")
-	listNpcKoordinates[npcUUID] = npcObj{X: -1000, Y: -1000, Color: 0}
-
-	// thread for broadcast
-	myMutex = sync.RWMutex{}
-	myNpcMutex = sync.RWMutex{}
-	ticker := time.NewTicker(time.Second / 100)
-	ticker4 := time.NewTicker(time.Second / 10)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				// do stuff
-				// fmt.Printf("thread")
-				// myMutex.Lock()
-				// s := transfairObj{Player: listPlayerKoordinates, Npc: listNpcKoordinates}
-				// myMutex.Unlock()
-				// j, _ := json.Marshal(listPlayerKoordinates)
-				myMutex.Lock()
-				for _, singleConn := range listConnections {
-					// singleConn.Conn.WriteMessage(1, j)
-					singleConn.Conn.WriteJSON(listPlayerKoordinates)
-				}
-				myMutex.Unlock()
-			case <-ticker4.C:
-				myNpcMutex.Lock()
-				for _, singleConn := range listConnections {
-					singleConn.Conn.WriteJSON(listNpcKoordinates)
-				}
-				myNpcMutex.Unlock()
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
-
-	ticker2 := time.NewTicker(time.Second)
-	quit2 := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker2.C:
-				for {
-					if len(listNpcKoordinates) >= 100 {
-						break
-					}
-					myNpcMutex.Lock()
-					npc := npcObj{X: rand.Intn(1000), Y: rand.Intn(700), Color: rand.Intn(10)}
-					listNpcKoordinates[uuid.New()] = npc
-					myNpcMutex.Unlock()
-				}
-				// j, _ := json.Marshal(listNpcKoordinates)
-				// for _, singleConn := range listConnections {
-				// 	singleConn.Conn.WriteMessage(1, j)
-				// }
-			case <-quit2:
-				ticker2.Stop()
-				return
-			}
-		}
-	}()
+	mapIdToPlayer = make(map[uuid.UUID]int)
+	stack = NewStack()
 
 	r := gin.New()
 
@@ -253,12 +224,14 @@ func main() {
 		c.JSON(http.StatusOK, listConnections)
 	})
 
-	r.GET("/test", func(c *gin.Context) {
-		s := transfairObj{Player: listPlayerKoordinates, Npc: listNpcKoordinates}
-		c.JSON(http.StatusOK, s)
-	})
-
 	fmt.Println("WebSocket-Server gestartet. Lausche auf http://localhost:8080/ws")
+
+	initNPCs()
+	initStack()
+
+	go movePlayer()
+	go checkCollission()
+	go sendUpdate()
 
 	r.Run(":8080")
 }

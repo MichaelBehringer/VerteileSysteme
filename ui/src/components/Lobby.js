@@ -7,9 +7,9 @@ function Lobby() {
   const navigate = useNavigate();
   const columns = [
     {
-      title: 'Id',
-      dataIndex: 'id',
-      key: 'id',
+      title: 'Name',
+      dataIndex: 'petName',
+      key: 'petName',
     },
     {
       title: 'Address',
@@ -41,6 +41,7 @@ function Lobby() {
           res.data.map(row => ({
             key: row.id,
             id: row.id,
+            petName : row.petName,
             address: row.address,
             playerCount: row.playerCount
           }))

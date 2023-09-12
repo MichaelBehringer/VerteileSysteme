@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { doGetRequestParam } from '../helper/RequestHelper';
+import { doGetRequestParam, baseUrl } from '../helper/RequestHelper';
 import { WebSocketDemo } from './WebSocketDemo';
 import MyCircleSocket from './MyCircleSocket';
 
@@ -10,7 +10,7 @@ function GameContainer() {
   useEffect(() => {
     doGetRequestParam('getUrl', id).then(
       res => {
-        setServerUrl(res.data)
+        setServerUrl("ws://"+baseUrl+":"+res.data+"/ws")
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps

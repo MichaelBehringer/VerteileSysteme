@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const url = "http://130.61.10.8:8090/"
+export const baseUrl = "localhost"
+const url = "http://"+baseUrl+":8090/"
 
 export async function doPostRequest(path, param) {
 	return axios.post(url+path, param)

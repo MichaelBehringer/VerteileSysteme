@@ -34,9 +34,6 @@ func npcCollision() {
 			if searchCircle != otherCircle {
 				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
 				if distance < searchCircle.Radius+otherCircle.Radius {
-					fmt.Printf("NPC --- Kreise überlappen: (%f, %f), Radius %f und (%f, %f), Radius %f\n",
-						searchCircle.X, searchCircle.Y, searchCircle.Radius,
-						otherCircle.X, otherCircle.Y, otherCircle.Radius)
 					listNpcKoordinates[otherCircle.Id].X = randFloat(0, 1000)
 					listNpcKoordinates[otherCircle.Id].Y = randFloat(0, 700)
 					listPlayerKoordinates[searchCircle.Id].Size += 2
@@ -64,9 +61,6 @@ func playerCollision() {
 			if searchCircle != otherCircle {
 				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
 				if distance < searchCircle.Radius+otherCircle.Radius {
-					fmt.Printf("Player --- Kreise überlappen: (%f, %f), Radius %f und (%f, %f), Radius %f\n",
-						searchCircle.X, searchCircle.Y, searchCircle.Radius,
-						otherCircle.X, otherCircle.Y, otherCircle.Radius)
 					if listPlayerKoordinates[searchCircle.Id].Size > listPlayerKoordinates[otherCircle.Id].Size {
 						listPlayerKoordinates[otherCircle.Id].X = randFloat(0, 1000)
 						listPlayerKoordinates[otherCircle.Id].Y = randFloat(0, 700)

@@ -1,16 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 
 	"github.com/gorilla/websocket"
 )
@@ -51,6 +56,13 @@ type transfaiNpc struct {
 	Y     float64 `json:"y"`
 }
 
+type serverObj struct {
+	Id            uuid.UUID `json:"id"`
+	PetName       string    `json:"petName"`
+	Address       string    `json:"address"`
+	PlayerCounter int       `json:"playerCounter"`
+}
+
 var listConnections []connectionObj
 var listPlayerKoordinates [30]gameObj
 var listNpcKoordinates [100]gameObj
@@ -58,8 +70,14 @@ var arrPlayerTarget [30]targetObj
 var mapIdToPlayer map[uuid.UUID]int
 
 var stack *Stack
+var playerCounter int
+var gameServerId uuid.UUID
+
+var words = flag.Int("words", 2, "The number of words in the pet name")
+var separator = flag.String("separator", "-", "The separator between words in the pet name")
 
 func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (float64, float64) {
+	//map eingrenzen auf 0 bis 5k
 	vectorX := xEnd - xStart
 	vectorY := yEnd - yStart
 
@@ -98,6 +116,8 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	playerCounter += 1
 
 	// color for player
 	randomColor := rand.Intn(9)
@@ -141,12 +161,33 @@ func removeUnusedConnection(key uuid.UUID) {
 	}
 	// delete(listPlayerKoordinates, key)
 	delete(mapIdToPlayer, key)
+	playerCounter -= 1
 
 }
 
 func remove(s []connectionObj, i int) []connectionObj {
 	s[i] = s[len(s)-1]
 	return s[:len(s)-1]
+}
+
+func getPetName() string {
+	flag.Parse()
+	return petname.Generate(*words, *separator)
+}
+
+func gameServerAlive(port string, ipAddress string, petName string) {
+	url := "http://localhost:8090/registerGameServer"
+
+	for range time.Tick(time.Second * 10) {
+		requestData, _ := json.Marshal(serverObj{Id: gameServerId, Address: port, PlayerCounter: playerCounter, PetName: petName})
+
+		resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestData))
+		if err != nil {
+			fmt.Println("Fehler bei der Anfrage:", err)
+			return
+		}
+		defer resp.Body.Close()
+	}
 }
 
 func initNPCs() {
@@ -204,6 +245,12 @@ func sendUpdate() {
 func main() {
 	mapIdToPlayer = make(map[uuid.UUID]int)
 	stack = NewStack()
+	playerCounter = 0
+	gameServerId = uuid.New()
+	port := os.Args[1]
+
+	godotenv.Load()
+	ipAddress := os.Getenv("IP_ADDRESS")
 
 	r := gin.New()
 
@@ -224,7 +271,7 @@ func main() {
 		c.JSON(http.StatusOK, listConnections)
 	})
 
-	fmt.Println("WebSocket-Server gestartet. Lausche auf http://localhost:8080/ws")
+	fmt.Println("WebSocket-Server gestartet. Lausche auf http://localhost:" + port)
 
 	initNPCs()
 	initStack()
@@ -233,5 +280,8 @@ func main() {
 	go checkCollission()
 	go sendUpdate()
 
-	r.Run(":8080")
+	serverPetName := getPetName()
+	go gameServerAlive(port, ipAddress, serverPetName)
+
+	r.Run(ipAddress + ":" + port)
 }

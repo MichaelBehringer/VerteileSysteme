@@ -5,18 +5,21 @@ import MyCircle from "./components/MyCircle";
 import GameContainer from "./components/GameContainer";
 import CharacterCreation from "./components/CharacterCreation";
 import Login from "./components/Login";
-import { useEffect, useState } from "react"; // Hook hinzufügen
+import HighscoreList from './components/HighscoreList';
+import { useEffect, useState } from "react";
 
 function App() {
   const location = useLocation();
   const [hideHeaderAndButton, setHideHeaderAndButton] = useState(false);
+  const [hideHighscoreList, setHideHighscoreList] = useState(false);
 
   useEffect(() => {
-    // Überprüfen, ob sich der Benutzer auf der Seite "/game" befindet
     if (location.pathname.startsWith("/game")) {
       setHideHeaderAndButton(true);
+      setHideHighscoreList(true);
     } else {
       setHideHeaderAndButton(false);
+      setHideHighscoreList(false);
     }
   }, [location.pathname]);
 
@@ -29,6 +32,13 @@ function App() {
           </Link>
           <h1>Hallo zu unserem Spiel 🦚</h1>
         </>
+      )}
+      {!hideHighscoreList && (
+        <div className="highscore-list">
+          👑 Top Highscores 👑 <br/>
+          • Name, Highscore:  <br/>
+          <HighscoreList  />
+        </div>
       )}
       <Routes>
         <Route path="/" element={<MainMenue />} />

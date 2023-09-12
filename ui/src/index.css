@@ -72,3 +72,11 @@ h1 {
   font-weight: bold;
   border-radius: 50%; /* Runder Button */
 }
+
+.highscore-list {
+  position: absolute;
+  top: 30px;
+  right: 30px; 
+  color: white;
+  padding: 12px 24px;
+}

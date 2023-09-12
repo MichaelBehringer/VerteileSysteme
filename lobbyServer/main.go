@@ -56,6 +56,9 @@ func areLastCallsDifferent(server1 Server, requestTime time.Time, threshold time
 }
 
 func main() {
+	InitDB()
+	defer CloseDB()
+
 	r := gin.New()
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
@@ -96,6 +99,11 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, url)
+	})
+
+	r.GET("/highscores", func(c *gin.Context) {
+		functions := GetFunctions()
+		c.IndentedJSON(http.StatusOK, functions)
 	})
 
 	r.POST("/registerGameServer", func(c *gin.Context) {

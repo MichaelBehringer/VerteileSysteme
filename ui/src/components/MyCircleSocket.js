@@ -25,13 +25,14 @@ function MyCircleSocket(props) {
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 });
   const svgRef = useRef()
   const { sendMessage, lastMessage } = useWebSocket(props.serverUrl);
-  const [playerObjects, setPlayerObjects] = useState([]);
+  const [playerObject, setPlayerObject] = useState([]);
+  const [otherPlayerObjects, setOtherPlayerObjects] = useState([]);
   const [npcObjects, setNpcObjects] = useState([]);
 
   useEffect(() => {
     if (lastMessage !== null) {
       const messageData = JSON.parse(lastMessage.data)
-      userPlayer = messageData.player[0]     //folgt zurzeit dem ersten Spieler: später nach ID   //.find(player => player.id === ''); // Replace userId with the actual user's ID
+      userPlayer = messageData.player     //folgt zurzeit dem ersten Spieler: später nach ID   //.find(player => player.id === ''); // Replace userId with the actual user's ID
     if (userPlayer) {
       // Adjust the camera position to follow the user player
       setCameraPosition({
@@ -40,7 +41,8 @@ function MyCircleSocket(props) {
       });
     }
       //console.log(messageData)
-      setPlayerObjects(messageData.player)
+      setPlayerObject(messageData.player)
+      setOtherPlayerObjects(messageData.otherPlayer)
       setNpcObjects(messageData.npc)
     }
   }, [lastMessage]);
@@ -101,10 +103,11 @@ function MyCircleSocket(props) {
         {createCircle(500, 700, "red", "bot")} */}
         {npcObjects.map(obj =>
            createCircleNpc(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color)
+        )}
+        {otherPlayerObjects?.map(obj =>
+          createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.id, obj.size)
           )}
-          {playerObjects.map(obj =>
-            createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.id, obj.size)
-            )}
+        {createCircle(playerObject.x - cameraPosition.x, playerObject.y - cameraPosition.y, playerObject.color, playerObject.id, playerObject.size)}
       </svg>
     </div>
   );

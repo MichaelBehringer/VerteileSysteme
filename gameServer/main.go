@@ -42,6 +42,12 @@ type transfairObj struct {
 	NPC    []transfaiNpc     `json:"npc"`
 }
 
+type finalTransfairObj struct {
+	Player      transfairPlayer   `json:"player"`
+	OtherPlayer []transfairPlayer `json:"otherPlayer"`
+	NPC         []transfaiNpc     `json:"npc"`
+}
+
 type transfairPlayer struct {
 	Id    uuid.UUID `json:"id"`
 	Color int       `json:"color"`
@@ -92,7 +98,7 @@ func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (f
 	stepSize := 2.0
 
 	if math.Abs(vectorX)+math.Abs(vectorY) < 100 {
-		stepSize = float64(0.02*(math.Abs(vectorX)+math.Abs(vectorY)))
+		stepSize = float64(0.02 * (math.Abs(vectorX) + math.Abs(vectorY)))
 	}
 
 	newX := xStart + normalizedX*float64(stepSize)
@@ -212,7 +218,7 @@ func movePlayer() {
 		for _, value := range mapIdToPlayer {
 			oldPlayerKoords := listPlayerKoordinates[value]
 			playerTarget := arrPlayerTarget[value]
-			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X + oldPlayerKoords.X, playerTarget.Y + oldPlayerKoords.Y)
+			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X+oldPlayerKoords.X, playerTarget.Y+oldPlayerKoords.Y)
 			listPlayerKoordinates[value].X = newX
 			listPlayerKoordinates[value].Y = newY
 		}
@@ -241,7 +247,17 @@ func sendUpdate() {
 
 		objT := transfairObj{Player: objPlayer, NPC: objNpc}
 		for _, singleConn := range listConnections {
-			singleConn.Conn.WriteJSON(objT)
+			var objPlayerT transfairPlayer
+			var objOtherPlayerT []transfairPlayer
+			for _, value := range objT.Player {
+				if value.Id == singleConn.Key {
+					objPlayerT = value
+				} else {
+					objOtherPlayerT = append(objOtherPlayerT, value)
+				}
+			}
+			finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objT.NPC}
+			singleConn.Conn.WriteJSON(finalObjT)
 		}
 	}
 }

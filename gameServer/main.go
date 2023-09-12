@@ -82,14 +82,18 @@ func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (f
 	vectorY := yEnd - yStart
 
 	lenghtVector := math.Sqrt(math.Pow(vectorX, 2) + math.Pow(vectorY, 2))
-	if lenghtVector < 1 {
+	if lenghtVector == 0 {
 		return xStart, yStart
 	}
 
 	normalizedX := vectorX / lenghtVector
 	normalizedY := vectorY / lenghtVector
 
-	stepSize := 2
+	stepSize := 2.0
+
+	if math.Abs(vectorX)+math.Abs(vectorY) < 100 {
+		stepSize = float64(0.02*(math.Abs(vectorX)+math.Abs(vectorY)))
+	}
 
 	newX := xStart + normalizedX*float64(stepSize)
 	newY := yStart + normalizedY*float64(stepSize)
@@ -208,7 +212,7 @@ func movePlayer() {
 		for _, value := range mapIdToPlayer {
 			oldPlayerKoords := listPlayerKoordinates[value]
 			playerTarget := arrPlayerTarget[value]
-			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X, playerTarget.Y)
+			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X + oldPlayerKoords.X, playerTarget.Y + oldPlayerKoords.Y)
 			listPlayerKoordinates[value].X = newX
 			listPlayerKoordinates[value].Y = newY
 		}

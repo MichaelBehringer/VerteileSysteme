@@ -4,11 +4,15 @@ import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 const width = window.innerWidth;
 const height = window.innerHeight;
 
+let userPlayer = '';
+
+
+
 const colors = ["red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua"]
 
 function createCircle(Pcx, Pcy, Pcolor, name, size) {
   return <>
-    <circle key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" stroke-width="3" fill={colors[Pcolor]} />
+    <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" stroke-width="3" fill={colors[Pcolor]} />
     <text key={"t"+name} x={Pcx - 50} y={Pcy + 20 + size} fontSize="20" fill="black">{name}</text>
   </>
 }
@@ -18,6 +22,7 @@ function createCircleNpc(Pcx, Pcy, Pcolor) {
 }
 
 function MyCircleSocket(props) {
+  const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 });
   const svgRef = useRef()
   const { sendMessage, lastMessage } = useWebSocket(props.serverUrl);
   const [playerObjects, setPlayerObjects] = useState([]);
@@ -26,7 +31,15 @@ function MyCircleSocket(props) {
   useEffect(() => {
     if (lastMessage !== null) {
       const messageData = JSON.parse(lastMessage.data)
-      console.log(messageData)
+      userPlayer = messageData.player[0]     //folgt zurzeit dem ersten Spieler: später nach ID   //.find(player => player.id === ''); // Replace userId with the actual user's ID
+    if (userPlayer) {
+      // Adjust the camera position to follow the user player
+      setCameraPosition({
+        x: userPlayer.x - width / 2, // Adjust as needed
+        y: userPlayer.y - height / 2, // Adjust as needed
+      });
+    }
+      //console.log(messageData)
       setPlayerObjects(messageData.player)
       setNpcObjects(messageData.npc)
     }
@@ -48,21 +61,37 @@ function MyCircleSocket(props) {
 
   function setPositionUpdater() {
     if (svgRef.current) {
-      let point = svgRef.current.createSVGPoint();
+      
+      
+      const circleCenterX = width/2;
+      const circleCenterY = height/2;
+  
+      let relativeMousePosition = { x: 0, y: 0 };
+  
       document.onmousemove = (e) => {
-        point.x = e.clientX;
-        point.y = e.clientY;
+        relativeMousePosition.x = e.clientX - circleCenterX;
+        relativeMousePosition.y = e.clientY - circleCenterY;
+        console.log("RelativeX: ", e.clientX - circleCenterX)
+        console.log("RelativeY: ", e.clientY - circleCenterY)
       };
+  
       document.ontouchmove = (e) => {
-        point.x = e.touches[0].clientX;
-        point.y = e.touches[0].clientY;
+        relativeMousePosition.x = e.touches[0].clientX - circleCenterX;
+        relativeMousePosition.y = e.touches[0].clientY - circleCenterY;
       };
-      setInterval(() => updatePosition(point), 10);
-    }
+  
+      setInterval(() => updatePosition(relativeMousePosition), 10);
+    
+  }
   }
 
-  function updatePosition(point) {   
-    sendMessage(JSON.stringify({x: point.x, y: point.y}))
+  function updatePosition(mousePosition) {
+    // Calculate the player's new position based on the mouse/touch position
+    const newX = mousePosition.x;
+    const newY = mousePosition.y;
+  
+    // Send the updated position to the server
+    sendMessage(JSON.stringify({ x: newX, y: newY }));
   }
 
   return (
@@ -71,10 +100,10 @@ function MyCircleSocket(props) {
         {/* {createCircle(playerPos.x, playerPos.y, "blue", "player")}
         {createCircle(500, 700, "red", "bot")} */}
         {npcObjects.map(obj =>
-          createCircleNpc(obj.x, obj.y, obj.color)
+           createCircleNpc(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color)
           )}
           {playerObjects.map(obj =>
-            createCircle(obj.x, obj.y, obj.color, obj.id, obj.size)
+            createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.id, obj.size)
             )}
       </svg>
     </div>

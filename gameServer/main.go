@@ -11,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/dhconnelly/rtreego"
 	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -69,15 +70,19 @@ type serverObj struct {
 	PlayerCounter int       `json:"playerCounter"`
 }
 
+var mapBoundary = 5000.0
+
 var listConnections []connectionObj
 var listPlayerKoordinates [30]gameObj
-var listNpcKoordinates [100]gameObj
+var listNpcKoordinates [3000]gameObj
 var arrPlayerTarget [30]targetObj
 var mapIdToPlayer map[uuid.UUID]int
 
 var stack *Stack
 var playerCounter int
 var gameServerId uuid.UUID
+
+var treeNpc *rtreego.Rtree
 
 var words = flag.Int("words", 2, "The number of words in the pet name")
 var separator = flag.String("separator", "-", "The separator between words in the pet name")
@@ -103,6 +108,20 @@ func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (f
 
 	newX := xStart + normalizedX*float64(stepSize)
 	newY := yStart + normalizedY*float64(stepSize)
+
+	if newX > mapBoundary {
+		newX = mapBoundary
+	}
+	if newX < 0.0 {
+		newX = 0.0
+	}
+
+	if newY > mapBoundary {
+		newY = mapBoundary
+	}
+	if newY < 0.0 {
+		newY = 0.0
+	}
 
 	return newX, newY
 }
@@ -142,7 +161,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	listConnections = append(listConnections, s)
 	defer removeUnusedConnection(uuidNode)
 
-	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, 1000), Y: randFloat(0, 700), Color: randomColor, Size: 20}
+	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: randomColor, Size: 20}
 
 	// debug
 	fmt.Printf("New User: %d:-- %s\n", playerId, uuidNode)
@@ -187,23 +206,29 @@ func getPetName() string {
 
 func gameServerAlive(port string, ipAddress string, petName string) {
 	url := "http://localhost:8090/registerGameServer"
+	execGameServerAlive(url, port, ipAddress, petName)
 
 	for range time.Tick(time.Second * 10) {
-		requestData, _ := json.Marshal(serverObj{Id: gameServerId, Address: port, PlayerCounter: playerCounter, PetName: petName})
-
-		resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestData))
-		if err != nil {
-			fmt.Println("Fehler bei der Anfrage:", err)
-			return
-		}
-		defer resp.Body.Close()
+		execGameServerAlive(url, port, ipAddress, petName)
 	}
 }
 
+func execGameServerAlive(url string, port string, ipAddress string, petName string) {
+	requestData, _ := json.Marshal(serverObj{Id: gameServerId, Address: port, PlayerCounter: playerCounter, PetName: petName})
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestData))
+	if err != nil {
+		fmt.Println("Lobby Server not found")
+		return
+	}
+	defer resp.Body.Close()
+}
+
 func initNPCs() {
-	for i := 0; i < 100; i++ {
-		npc := gameObj{X: randFloat(0, 1000), Y: randFloat(0, 700), Color: rand.Intn(10)}
+	for i := 0; i < 3000; i++ {
+		npc := gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: rand.Intn(10)}
 		listNpcKoordinates[i] = npc
+		treeNpc.Insert(Circle{Id: 0, X: npc.X, Y: npc.Y, Radius: 10})
 	}
 }
 
@@ -256,13 +281,14 @@ func sendUpdate() {
 					objOtherPlayerT = append(objOtherPlayerT, value)
 				}
 			}
-			finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objT.NPC}
+			finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: visibleNPC(objPlayerT)}
 			singleConn.Conn.WriteJSON(finalObjT)
 		}
 	}
 }
 
 func main() {
+	treeNpc = rtreego.NewTree(2, 25, 50)
 	mapIdToPlayer = make(map[uuid.UUID]int)
 	stack = NewStack()
 	playerCounter = 0

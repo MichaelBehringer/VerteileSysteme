@@ -18,29 +18,41 @@ func (c Circle) Bounds() *rtreego.Rect {
 }
 
 func npcCollision() {
-	tree := rtreego.NewTree(2, 25, 50)
-
-	for id, value := range listNpcKoordinates {
-		tree.Insert(Circle{Id: id, X: value.X, Y: value.Y, Radius: 10})
-	}
-
 	for _, value := range mapIdToPlayer {
 		player := listPlayerKoordinates[value]
 		searchCircle := Circle{Id: value, X: player.X, Y: player.Y, Radius: float64(player.Size)}
 
-		results := tree.SearchIntersect(searchCircle.Bounds())
+		results := treeNpc.SearchIntersect(searchCircle.Bounds())
 		for _, result := range results {
 			otherCircle := result.(Circle)
 			if searchCircle != otherCircle {
 				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
 				if distance < searchCircle.Radius+otherCircle.Radius {
-					listNpcKoordinates[otherCircle.Id].X = randFloat(0, 1000)
-					listNpcKoordinates[otherCircle.Id].Y = randFloat(0, 700)
+					newX := randFloat(0, mapBoundary)
+					newY := randFloat(0, mapBoundary)
+					listNpcKoordinates[otherCircle.Id].X = newX
+					listNpcKoordinates[otherCircle.Id].Y = newY
 					listPlayerKoordinates[searchCircle.Id].Size += 2
+
+					treeNpc.Delete(Circle{Id: 0, X: otherCircle.X, Y: otherCircle.Y, Radius: 10})
+					treeNpc.Insert(Circle{Id: 0, X: newX, Y: newY, Radius: 10})
 				}
 			}
 		}
 	}
+}
+
+func visibleNPC(playerObj transfairPlayer) []transfaiNpc {
+	var objNpcT []transfaiNpc
+
+	searchCircle := Circle{Id: -1, X: playerObj.X, Y: playerObj.Y, Radius: 300.0}
+
+	results := treeNpc.SearchIntersect(searchCircle.Bounds())
+	for _, result := range results {
+		otherCircle := result.(Circle)
+		objNpcT = append(objNpcT, transfaiNpc{Color: 1, X: otherCircle.X, Y: otherCircle.Y})
+	}
+	return objNpcT
 }
 
 func playerCollision() {
@@ -62,12 +74,11 @@ func playerCollision() {
 				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
 				if distance < searchCircle.Radius+otherCircle.Radius {
 					if listPlayerKoordinates[searchCircle.Id].Size > listPlayerKoordinates[otherCircle.Id].Size {
-						listPlayerKoordinates[otherCircle.Id].X = randFloat(0, 1000)
-						listPlayerKoordinates[otherCircle.Id].Y = randFloat(0, 700)
+						listPlayerKoordinates[otherCircle.Id].X = randFloat(0, mapBoundary)
+						listPlayerKoordinates[otherCircle.Id].Y = randFloat(0, mapBoundary)
 						listPlayerKoordinates[otherCircle.Id].Size = 20
 						listPlayerKoordinates[searchCircle.Id].Size += 20
 					}
-
 				}
 			}
 		}

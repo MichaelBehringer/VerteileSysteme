@@ -102,7 +102,8 @@ func main() {
 	})
 
 	r.GET("/highscores", func(c *gin.Context) {
-		functions := GetFunctions()
+		// functions := GetFunctions()
+		var functions = []Highscore{{Highscore: 69, Name: "Franzel"}}
 		c.IndentedJSON(http.StatusOK, functions)
 	})
 

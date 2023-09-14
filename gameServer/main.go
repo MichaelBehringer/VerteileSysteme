@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/dhconnelly/rtreego"
@@ -22,8 +23,9 @@ import (
 )
 
 type connectionObj struct {
-	Key  uuid.UUID       `json:"key"`
-	Conn *websocket.Conn `json:"connection"`
+	Key       uuid.UUID       `json:"key"`
+	Conn      *websocket.Conn `json:"connection"`
+	ConnMutex *sync.Mutex     `json:"connectionMutex"`
 }
 
 type gameObj struct {
@@ -36,11 +38,6 @@ type gameObj struct {
 type targetObj struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
-}
-
-type transfairObj struct {
-	Player []transfairPlayer `json:"player"`
-	NPC    []transfaiNpc     `json:"npc"`
 }
 
 type finalTransfairObj struct {
@@ -157,7 +154,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	mapIdToPlayer[uuidNode] = playerId
 
 	// create player object and add to connectionList; delete from list on function end
-	s := connectionObj{Key: uuidNode, Conn: conn}
+	s := connectionObj{Key: uuidNode, Conn: conn, ConnMutex: &sync.Mutex{}}
 	listConnections = append(listConnections, s)
 	defer removeUnusedConnection(uuidNode)
 
@@ -259,32 +256,28 @@ func checkCollission() {
 
 func sendUpdate() {
 	for range time.Tick(time.Second / 100) {
-		var objPlayer []transfairPlayer
-		var objNpc []transfaiNpc
-		for key, value := range mapIdToPlayer {
-			player := listPlayerKoordinates[value]
-			objPlayer = append(objPlayer, transfairPlayer{Id: key, Color: player.Color, Size: player.Size, X: player.X, Y: player.Y})
-		}
-
-		for _, value := range listNpcKoordinates {
-			objNpc = append(objNpc, transfaiNpc{Color: value.Color, X: value.X, Y: value.Y})
-		}
-
-		objT := transfairObj{Player: objPlayer, NPC: objNpc}
 		for _, singleConn := range listConnections {
-			var objPlayerT transfairPlayer
-			var objOtherPlayerT []transfairPlayer
-			for _, value := range objT.Player {
-				if value.Id == singleConn.Key {
-					objPlayerT = value
-				} else {
-					objOtherPlayerT = append(objOtherPlayerT, value)
-				}
-			}
-			finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: visibleNPC(objPlayerT)}
-			singleConn.Conn.WriteJSON(finalObjT)
+			go sendSingleUpdate(singleConn)
 		}
 	}
+}
+
+func sendSingleUpdate(singleConn connectionObj) {
+	var objPlayerT transfairPlayer
+	var objOtherPlayerT []transfairPlayer
+	for key, value := range mapIdToPlayer {
+		player := listPlayerKoordinates[value]
+		transfiarPlayerObj := transfairPlayer{Id: key, Color: player.Color, Size: player.Size, X: player.X, Y: player.Y}
+		if key == singleConn.Key {
+			objPlayerT = transfiarPlayerObj
+		} else {
+			objOtherPlayerT = append(objOtherPlayerT, transfiarPlayerObj)
+		}
+	}
+	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: visibleNPC(objPlayerT)}
+	singleConn.ConnMutex.Lock()
+	singleConn.Conn.WriteJSON(finalObjT)
+	singleConn.ConnMutex.Unlock()
 }
 
 func main() {

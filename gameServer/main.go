@@ -299,7 +299,7 @@ func main() {
 		c.JSON(http.StatusOK, listConnections)
 	})
 
-	fmt.Println("WebSocket-Server gestartet. Lausche auf http://localhost:" + port)
+	fmt.Println("WebSocket-Server gestartet. Lausche auf" + port)
 
 	initNPCs()
 	initStack()

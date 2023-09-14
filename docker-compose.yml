@@ -23,6 +23,10 @@ services:
     - "8090:8090"
     depends_on:
       - db
+  ui:
+    build: ui
+    ports:
+    - "3000:3000"
   # nginx:
   #   build: ./nginx 
   #   ports:

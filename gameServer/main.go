@@ -32,7 +32,7 @@ type gameObj struct {
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
 	Color int     `json:"c"`
-	Size  int     `json:"s"`
+	Size  float64 `json:"s"`
 }
 
 type targetObj struct {
@@ -49,7 +49,7 @@ type finalTransfairObj struct {
 type transfairPlayer struct {
 	Id    uuid.UUID `json:"id"`
 	Color int       `json:"color"`
-	Size  int       `json:"size"`
+	Size  float64   `json:"size"`
 	X     float64   `json:"x"`
 	Y     float64   `json:"y"`
 }
@@ -71,7 +71,7 @@ var mapBoundary = 5000.0
 
 var listConnections []connectionObj
 var listPlayerKoordinates [30]gameObj
-var listNpcKoordinates [3000]gameObj
+var listNpcKoordinates [1200]gameObj
 var arrPlayerTarget [30]targetObj
 var mapIdToPlayer map[uuid.UUID]int
 
@@ -84,7 +84,7 @@ var treeNpc *rtreego.Rtree
 var words = flag.Int("words", 2, "The number of words in the pet name")
 var separator = flag.String("separator", "-", "The separator between words in the pet name")
 
-func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (float64, float64) {
+func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64, size float64) (float64, float64) {
 	//map eingrenzen auf 0 bis 5k
 	vectorX := xEnd - xStart
 	vectorY := yEnd - yStart
@@ -97,26 +97,23 @@ func calcNewPoint(xStart float64, yStart float64, xEnd float64, yEnd float64) (f
 	normalizedX := vectorX / lenghtVector
 	normalizedY := vectorY / lenghtVector
 
-	stepSize := 2.0
+	stepSize := 2.0 + 5.0/size
 
-	if math.Abs(vectorX)+math.Abs(vectorY) < 100 {
-		stepSize = float64(0.02 * (math.Abs(vectorX) + math.Abs(vectorY)))
+	if lenghtVector < 100 {
+		stepSize = stepSize * lenghtVector * 0.01
 	}
 
-	newX := xStart + normalizedX*float64(stepSize)
-	newY := yStart + normalizedY*float64(stepSize)
+	newX := xStart + normalizedX*stepSize
+	newY := yStart + normalizedY*stepSize
 
 	if newX > mapBoundary {
 		newX = mapBoundary
-	}
-	if newX < 0.0 {
+	} else if newX < 0.0 {
 		newX = 0.0
 	}
-
 	if newY > mapBoundary {
 		newY = mapBoundary
-	}
-	if newY < 0.0 {
+	} else if newY < 0.0 {
 		newY = 0.0
 	}
 
@@ -142,6 +139,11 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	if playerCounter > 30 {
+		fmt.Println("Max Player reached")
+		return
+	}
 
 	playerCounter += 1
 
@@ -222,10 +224,10 @@ func execGameServerAlive(url string, port string, ipAddress string, petName stri
 }
 
 func initNPCs() {
-	for i := 0; i < 3000; i++ {
+	for i := 0; i < 1200; i++ {
 		npc := gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: rand.Intn(10)}
 		listNpcKoordinates[i] = npc
-		treeNpc.Insert(Circle{Id: 0, X: npc.X, Y: npc.Y, Radius: 10})
+		treeNpc.Insert(Circle{Id: 0, X: npc.X, Y: npc.Y, Radius: 10, Color: npc.Color})
 	}
 }
 
@@ -240,7 +242,7 @@ func movePlayer() {
 		for _, value := range mapIdToPlayer {
 			oldPlayerKoords := listPlayerKoordinates[value]
 			playerTarget := arrPlayerTarget[value]
-			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X+oldPlayerKoords.X, playerTarget.Y+oldPlayerKoords.Y)
+			newX, newY := calcNewPoint(oldPlayerKoords.X, oldPlayerKoords.Y, playerTarget.X+oldPlayerKoords.X, playerTarget.Y+oldPlayerKoords.Y, oldPlayerKoords.Size)
 			listPlayerKoordinates[value].X = newX
 			listPlayerKoordinates[value].Y = newY
 		}

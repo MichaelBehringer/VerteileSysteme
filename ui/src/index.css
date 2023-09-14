@@ -7,7 +7,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Your existing .karo-container styles can go here */
+.karo-container {
+  background-image: radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 100%);
+  background-size: 300px 300px;
+  background-position: center center;
+}
 
 /* Styles for the provided content */
 .app-container {

@@ -99,9 +99,7 @@ function MyCircleSocket(props) {
   return (
     <div>
       <svg className="karo-container" bac ref={svgRef} style={fullScreen} width={width} height={height}>
-        {/* {createCircle(playerPos.x, playerPos.y, "blue", "player")}
-        {createCircle(500, 700, "red", "bot")} */}
-        {npcObjects.map(obj =>
+        {npcObjects?.map(obj =>
            createCircleNpc(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color)
         )}
         {otherPlayerObjects?.map(obj =>

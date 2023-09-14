@@ -3,14 +3,15 @@ package main
 import (
 	"fmt"
 	"math"
+	"math/rand"
 
 	"github.com/dhconnelly/rtreego"
 )
 
 type Circle struct {
-	Id     int
-	X, Y   float64
-	Radius float64
+	Id, Color int
+	X, Y      float64
+	Radius    float64
 }
 
 func (c Circle) Bounds() *rtreego.Rect {
@@ -30,12 +31,15 @@ func npcCollision() {
 				if distance < searchCircle.Radius+otherCircle.Radius {
 					newX := randFloat(0, mapBoundary)
 					newY := randFloat(0, mapBoundary)
+					newColor := rand.Intn(9)
 					listNpcKoordinates[otherCircle.Id].X = newX
 					listNpcKoordinates[otherCircle.Id].Y = newY
-					listPlayerKoordinates[searchCircle.Id].Size += 2
+					listNpcKoordinates[otherCircle.Id].Color = newColor
+					currSize := listPlayerKoordinates[searchCircle.Id].Size
+					listPlayerKoordinates[searchCircle.Id].Size = currSize + (50.0 / currSize)
 
-					treeNpc.Delete(Circle{Id: 0, X: otherCircle.X, Y: otherCircle.Y, Radius: 10})
-					treeNpc.Insert(Circle{Id: 0, X: newX, Y: newY, Radius: 10})
+					treeNpc.Delete(Circle{X: otherCircle.X, Y: otherCircle.Y, Radius: 10, Color: otherCircle.Color})
+					treeNpc.Insert(Circle{X: newX, Y: newY, Radius: 10, Color: newColor})
 				}
 			}
 		}
@@ -45,12 +49,12 @@ func npcCollision() {
 func visibleNPC(playerObj transfairPlayer) []transfaiNpc {
 	var objNpcT []transfaiNpc
 
-	searchCircle := Circle{Id: -1, X: playerObj.X, Y: playerObj.Y, Radius: 300.0}
+	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 600.0}
 
 	results := treeNpc.SearchIntersect(searchCircle.Bounds())
 	for _, result := range results {
 		otherCircle := result.(Circle)
-		objNpcT = append(objNpcT, transfaiNpc{Color: 1, X: otherCircle.X, Y: otherCircle.Y})
+		objNpcT = append(objNpcT, transfaiNpc{Color: otherCircle.Color, X: otherCircle.X, Y: otherCircle.Y})
 	}
 	return objNpcT
 }
@@ -76,8 +80,9 @@ func playerCollision() {
 					if listPlayerKoordinates[searchCircle.Id].Size > listPlayerKoordinates[otherCircle.Id].Size {
 						listPlayerKoordinates[otherCircle.Id].X = randFloat(0, mapBoundary)
 						listPlayerKoordinates[otherCircle.Id].Y = randFloat(0, mapBoundary)
+						deadSize := listPlayerKoordinates[otherCircle.Id].Size
 						listPlayerKoordinates[otherCircle.Id].Size = 20
-						listPlayerKoordinates[searchCircle.Id].Size += 20
+						listPlayerKoordinates[searchCircle.Id].Size += (deadSize / 10)
 					}
 				}
 			}

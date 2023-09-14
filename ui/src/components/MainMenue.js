@@ -21,14 +21,7 @@ function MainMenue() {
       >
         Lobby Suche
       </Button>
-      <Button
-        className="ant-btn"
-        type="primary"
-        block
-        onClick={() => navigate("/kreis")}
-      >
-        Kreise
-      </Button>
+
       <Button
         className="ant-btn"
         type="primary"

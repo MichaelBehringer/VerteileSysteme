@@ -9,9 +9,9 @@ const Demo = () => {
         value={value}
         onChangeComplete={(colorNew) => {
           setValue(colorNew);
-          //alert(`The selected color is ${color.toHexString()}`);
+          alert(`The selected color is ${colorNew.toHexString()}`);
           //Post color to /player
-          doPostRequest("/player", colorNew)
+          //doPostRequest("/player", colorNew)
         }}
       />
     </App>

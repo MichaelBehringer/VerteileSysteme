@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const baseUrl = "localhost"
-const url = "http://"+baseUrl+":8090/"
+const url = "http://"+baseUrl+"/lobby/"
 
 export async function doPostRequest(path, param) {
 	return axios.post(url+path, param)

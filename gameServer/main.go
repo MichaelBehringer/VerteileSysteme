@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -278,7 +279,7 @@ func main() {
 	stack = NewStack()
 	playerCounter = 0
 	gameServerId = uuid.New()
-	port := "8080"
+	port := os.Args[1]
 
 	r := gin.New()
 

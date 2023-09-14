@@ -40,7 +40,6 @@ function MyCircleSocket(props) {
         y: userPlayer.y - height / 2, // Adjust as needed
       });
     }
-      //console.log(messageData)
       setPlayerObject(messageData.player)
       setOtherPlayerObjects(messageData.otherPlayer)
       setNpcObjects(messageData.npc)
@@ -73,8 +72,6 @@ function MyCircleSocket(props) {
       document.onmousemove = (e) => {
         relativeMousePosition.x = e.clientX - circleCenterX;
         relativeMousePosition.y = e.clientY - circleCenterY;
-        console.log("RelativeX: ", e.clientX - circleCenterX)
-        console.log("RelativeY: ", e.clientY - circleCenterY)
       };
   
       document.ontouchmove = (e) => {

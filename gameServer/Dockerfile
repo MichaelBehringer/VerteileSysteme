@@ -17,4 +17,4 @@ COPY *.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /gameServer
 
 # Run
-CMD ["/gameServer"]
+CMD ["sh", "-c", "/gameServer $GAME_SERVER_PORT"]

@@ -11,7 +11,6 @@ COPY . .
 
 # Bauen Sie die React-Anwendung
 RUN npm run build
-
 RUN npm install -g serve
 
 # Starten Sie die Anwendung

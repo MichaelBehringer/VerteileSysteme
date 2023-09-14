@@ -99,6 +99,10 @@ function MyCircleSocket(props) {
   return (
     <div>
       <svg className="karo-container" bac ref={svgRef} style={fullScreen} width={width} height={height}>
+        <rect x={-10 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={10} height={5010} />
+        <rect x={5000 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={10} height={5010} />
+        <rect x={0 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={5010} height={10} />
+        <rect x={-10 - cameraPosition.x} y={5000 - cameraPosition.y} fill="white" width={5020} height={10} />
         {npcObjects?.map(obj =>
            createCircleNpc(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color)
         )}

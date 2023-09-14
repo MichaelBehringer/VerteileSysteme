@@ -58,5 +58,5 @@ func main() {
 		c.IndentedJSON(http.StatusOK, functions)
 	})
 
-	r.Run("localhost:8090")
+	r.Run(":8090")
 }

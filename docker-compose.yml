@@ -1,0 +1,32 @@
+version: '3'
+services:
+  db:
+    build: dbServer
+    image: mysql
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_DATABASE: gogoGameDB
+      MYSQL_USER: gogo
+      MYSQL_PASSWORD: gogo
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+  game:
+    build: gameServer
+    ports:
+    - "8080:8080"
+    depends_on:
+      - db
+  lobby:
+    build: lobbyServer
+    ports:
+    - "8090:8090"
+    depends_on:
+      - db
+  # nginx:
+  #   build: ./nginx 
+  #   ports:
+  #   - "8080:80"
+  #   depends_on:
+  #     - app1
+  #     - app2

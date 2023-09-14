@@ -11,7 +11,7 @@ var db *sql.DB
 var err error
 
 func InitDB() {
-	db, err = sql.Open("mysql", "gogo:gogo@tcp(localhost:3306)/gogoGameDB")
+	db, err = sql.Open("mysql", "gogo:gogo@tcp(db:3306)/gogoGameDB")
 	if err != nil {
 		panic(err.Error())
 	}

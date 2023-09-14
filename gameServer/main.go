@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 
 	"github.com/gorilla/websocket"
 )
@@ -202,14 +200,14 @@ func getPetName() string {
 	return petname.Generate(*words, *separator)
 }
 
-func gameServerAlive(port string, ipAddress string, petName string) {
-	execGameServerAlive(port, ipAddress, petName)
+func gameServerAlive(port string, petName string) {
+	execGameServerAlive(port, petName)
 	for range time.Tick(time.Second * 10) {
-		execGameServerAlive(port, ipAddress, petName)
+		execGameServerAlive(port, petName)
 	}
 }
 
-func execGameServerAlive(port string, ipAddress string, petName string) {
+func execGameServerAlive(port string, petName string) {
 	ExecuteDDL("CALL InsertUpdateGameServer(?, ?, ?, ?)", gameServerId, petName, port, playerCounter)
 }
 
@@ -280,10 +278,7 @@ func main() {
 	stack = NewStack()
 	playerCounter = 0
 	gameServerId = uuid.New()
-	port := os.Args[1]
-
-	godotenv.Load()
-	ipAddress := os.Getenv("IP_ADDRESS")
+	port := "8080"
 
 	r := gin.New()
 
@@ -314,7 +309,7 @@ func main() {
 	go sendUpdate()
 
 	serverPetName := getPetName()
-	go gameServerAlive(port, ipAddress, serverPetName)
+	go gameServerAlive(port, serverPetName)
 
-	r.Run(ipAddress + ":" + port)
+	r.Run(":" + port)
 }

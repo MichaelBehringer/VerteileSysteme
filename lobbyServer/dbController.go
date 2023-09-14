@@ -16,8 +16,9 @@ type Highscore struct {
 }
 
 func InitDB() {
-	db, err = sql.Open("mysql", "gogo:gogo@tcp(localhost:3306)/gogoGameDB")
+	db, err = sql.Open("mysql", "gogo:gogo@tcp(db:3306)/gogoGameDB")
 	if err != nil {
+		fmt.Println(err)
 		panic(err.Error())
 	}
 }

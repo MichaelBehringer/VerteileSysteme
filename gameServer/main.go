@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -204,23 +203,14 @@ func getPetName() string {
 }
 
 func gameServerAlive(port string, ipAddress string, petName string) {
-	url := "http://localhost:8090/registerGameServer"
-	execGameServerAlive(url, port, ipAddress, petName)
-
+	execGameServerAlive(port, ipAddress, petName)
 	for range time.Tick(time.Second * 10) {
-		execGameServerAlive(url, port, ipAddress, petName)
+		execGameServerAlive(port, ipAddress, petName)
 	}
 }
 
-func execGameServerAlive(url string, port string, ipAddress string, petName string) {
-	requestData, _ := json.Marshal(serverObj{Id: gameServerId, Address: port, PlayerCounter: playerCounter, PetName: petName})
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestData))
-	if err != nil {
-		fmt.Println("Lobby Server not found")
-		return
-	}
-	defer resp.Body.Close()
+func execGameServerAlive(port string, ipAddress string, petName string) {
+	ExecuteDDL("CALL InsertUpdateGameServer(?, ?, ?, ?)", gameServerId, petName, port, playerCounter)
 }
 
 func initNPCs() {
@@ -283,6 +273,8 @@ func sendSingleUpdate(singleConn connectionObj) {
 }
 
 func main() {
+	InitDB()
+	defer CloseDB()
 	treeNpc = rtreego.NewTree(2, 25, 50)
 	mapIdToPlayer = make(map[uuid.UUID]int)
 	stack = NewStack()

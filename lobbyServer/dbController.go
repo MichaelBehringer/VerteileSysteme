@@ -16,7 +16,7 @@ type Highscore struct {
 }
 
 func InitDB() {
-	db, err = sql.Open("mysql", "root1:root@(localhost:3306)/VerteilteSystemeDB")
+	db, err = sql.Open("mysql", "gogo:gogo@tcp(localhost:3306)/gogoGameDB")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -35,8 +35,17 @@ func ExecuteSQL(statement string, params ...interface{}) *sql.Rows {
 	return results
 }
 
+func ExecuteSQLRow(statement string, params ...interface{}) *sql.Row {
+	return db.QueryRow(statement, params...)
+}
+
+func ExecuteDDL(statement string, params ...interface{}) sql.Result {
+	result, _ := db.Exec(statement, params...)
+	return result
+}
+
 func GetFunctions() []Highscore {
-	results := ExecuteSQL("SELECT Highscore, Name FROM Highscore JOIN User ON Highscore.User = User.ID ORDER BY Highscore DESC LIMIT 10")
+	results := ExecuteSQL("SELECT Highscore, Username FROM Highscore JOIN Player ON Highscore.Player_ID = Player.ID ORDER BY Highscore DESC LIMIT 10")
 	functions := []Highscore{}
 	for results.Next() {
 		var function Highscore
@@ -44,4 +53,15 @@ func GetFunctions() []Highscore {
 		functions = append(functions, function)
 	}
 	return functions
+}
+
+func GetGameServers() []Server {
+	results := ExecuteSQL("select ID, Servername, Port, PlayerCounter from ActiveGameServer")
+	servers := []Server{}
+	for results.Next() {
+		var server Server
+		results.Scan(&server.ID, &server.PetName, &server.Address, &server.PlayerCount)
+		servers = append(servers, server)
+	}
+	return servers
 }

@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
-
-const width = window.innerWidth;
-const height = window.innerHeight;
+import useWindowDimensions from "../hooks/useWindowDimensions";
 
 let userPlayer = '';
 
@@ -28,6 +26,7 @@ function MyCircleSocket(props) {
   const [playerObject, setPlayerObject] = useState([]);
   const [otherPlayerObjects, setOtherPlayerObjects] = useState([]);
   const [npcObjects, setNpcObjects] = useState([]);
+  const {width, height} = useWindowDimensions();
 
   useEffect(() => {
     if (lastMessage !== null) {

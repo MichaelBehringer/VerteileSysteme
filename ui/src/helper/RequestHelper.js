@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const baseUrl = "localhost"
+export const baseUrl = window.location.hostname
 const url = "http://"+baseUrl+"/lobby/"
 
 export async function doPostRequest(path, param) {

@@ -53,7 +53,7 @@ func npcCollision() {
 func visibleNPC(playerObj transfairPlayer) []transfaiNpc {
 	var objNpcT []transfaiNpc
 
-	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 600.0}
+	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 350.0}
 
 	results := treeNpc.SearchIntersect(searchCircle.Bounds())
 	for _, result := range results {
@@ -99,7 +99,10 @@ func getContainerNo() string {
 	containerID, _ := os.Hostname()
 	containerInfo, _ := cli.ContainerInspect(context.Background(), containerID)
 	containerName := containerInfo.Name[1:]
-	containerName = strings.Split(containerName, "-")[2]
+	splitFunc := func(r rune) bool {
+		return r == '-' || r == '_'
+	}
+	containerName = strings.FieldsFunc(containerName, splitFunc)[2]
 	return containerName
 }
 

@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -201,15 +200,15 @@ func getPetName() string {
 	return petname.Generate(*words, *separator)
 }
 
-func gameServerAlive(port string, petName string) {
-	execGameServerAlive(port, petName)
+func gameServerAlive(containerNo string, petName string) {
+	execGameServerAlive(containerNo, petName)
 	for range time.Tick(time.Second * 10) {
-		execGameServerAlive(port, petName)
+		execGameServerAlive(containerNo, petName)
 	}
 }
 
-func execGameServerAlive(port string, petName string) {
-	ExecuteDDL("CALL InsertUpdateGameServer(?, ?, ?, ?)", gameServerId, petName, port, playerCounter)
+func execGameServerAlive(containerNo string, petName string) {
+	ExecuteDDL("CALL InsertUpdateGameServer(?, ?, ?, ?)", gameServerId, petName, containerNo, playerCounter)
 }
 
 func initNPCs() {
@@ -279,7 +278,6 @@ func main() {
 	stack = NewStack()
 	playerCounter = 0
 	gameServerId = uuid.New()
-	port := os.Args[1]
 
 	r := gin.New()
 
@@ -297,10 +295,11 @@ func main() {
 
 	// debug enpoints
 	r.GET("/players", func(c *gin.Context) {
+		fmt.Println("franz")
 		c.JSON(http.StatusOK, listConnections)
 	})
 
-	fmt.Println("WebSocket-Server gestartet. Lausche auf" + port)
+	fmt.Println("WebSocket-Server gestartet. Lausche auf 8080")
 
 	initNPCs()
 	initStack()
@@ -310,7 +309,8 @@ func main() {
 	go sendUpdate()
 
 	serverPetName := getPetName()
-	go gameServerAlive(port, serverPetName)
+	containerNo := getContainerNo()
+	go gameServerAlive(containerNo, serverPetName)
 
-	r.Run(":" + port)
+	r.Run(":8080")
 }

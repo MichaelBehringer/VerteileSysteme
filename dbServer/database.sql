@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS Highscore (
 CREATE TABLE IF NOT EXISTS GameServer (
     ID VARCHAR(36) PRIMARY KEY,
     Servername VARCHAR(255) NOT NULL,
-    Port INT NOT NULL,
+    Servernumber INT NOT NULL,
     PlayerCounter INT NOT NULL,
     LastSeen TIMESTAMP NOT NULL
 );
@@ -23,7 +23,7 @@ DELIMITER //
 CREATE PROCEDURE InsertUpdateGameServer(
 	IN p_ID VARCHAR(36),
     IN p_Servername VARCHAR(255),
-    IN p_Port INT,
+    IN p_Servernumber INT,
     IN p_PlayerCounter INT
 )
 BEGIN
@@ -41,14 +41,14 @@ BEGIN
         WHERE ID = p_ID;
     ELSE
         -- Neuen Eintrag einfügen, wenn die ID nicht vorhanden ist
-        INSERT INTO GameServer (ID, Servername, Port, PlayerCounter, LastSeen)
-        VALUES (p_ID, p_Servername, p_Port, p_PlayerCounter, NOW());
+        INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen)
+        VALUES (p_ID, p_Servername, p_Servernumber, p_PlayerCounter, NOW());
     END IF;
 END; //  
 DELIMITER ;
 
 CREATE or REPLACE VIEW ActiveGameServer AS
-SELECT ID, Servername, Port, PlayerCounter
+SELECT ID, Servername, Servernumber, PlayerCounter
 FROM GameServer
 WHERE TIMESTAMPDIFF(SECOND, LastSeen, NOW()) <= 15;
 

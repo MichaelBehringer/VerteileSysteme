@@ -43,6 +43,7 @@ function MyCircleSocket(props) {
       setOtherPlayerObjects(messageData.otherPlayer)
       setNpcObjects(messageData.npc)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessage]);
 
   const fullScreen = {

@@ -47,10 +47,10 @@ func main() {
 
 	r.GET("/getUrl/:id", func(c *gin.Context) {
 		id := c.Param("id")
-		var port string
-		ExecuteSQLRow("select g.Port from GameServer g where g.ID = ?", id).Scan(&port)
+		var servernumber string
+		ExecuteSQLRow("select g.Servernumber from GameServer g where g.ID = ?", id).Scan(&servernumber)
 
-		c.JSON(http.StatusOK, port)
+		c.JSON(http.StatusOK, servernumber)
 	})
 
 	r.GET("/highscores", func(c *gin.Context) {

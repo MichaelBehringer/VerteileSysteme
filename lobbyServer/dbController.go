@@ -57,7 +57,7 @@ func GetFunctions() []Highscore {
 }
 
 func GetGameServers() []Server {
-	results := ExecuteSQL("select ID, Servername, Port, PlayerCounter from ActiveGameServer")
+	results := ExecuteSQL("select ID, Servername, Servernumber, PlayerCounter from ActiveGameServer")
 	servers := []Server{}
 	for results.Next() {
 		var server Server

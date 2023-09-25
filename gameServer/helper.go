@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
+	"strings"
 
 	"github.com/dhconnelly/rtreego"
+	"github.com/docker/docker/client"
 )
 
 type Circle struct {
@@ -88,6 +92,15 @@ func playerCollision() {
 			}
 		}
 	}
+}
+
+func getContainerNo() string {
+	cli, _ := client.NewClientWithOpts(client.FromEnv)
+	containerID, _ := os.Hostname()
+	containerInfo, _ := cli.ContainerInspect(context.Background(), containerID)
+	containerName := containerInfo.Name[1:]
+	containerName = strings.Split(containerName, "-")[2]
+	return containerName
 }
 
 type Stack struct {

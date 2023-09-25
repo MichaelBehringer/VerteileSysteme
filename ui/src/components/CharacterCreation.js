@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { App, ColorPicker } from 'antd';
-import { doPostRequest } from '../helper/RequestHelper';
 const Demo = () => {
   const [value, setValue] = useState('#1677ff');
   return (

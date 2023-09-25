@@ -15,19 +15,25 @@ services:
     build: gameServer
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    scale: 3
+    deploy:
+      mode: replicated
+      replicas: 3
     restart: always
     depends_on:
       - db
   lobby:
     build: lobbyServer
-    scale: 2
+    deploy:
+      mode: replicated
+      replicas: 2
     restart: always
     depends_on:
       - db
   ui:
     build: ui
-    scale: 2
+    deploy:
+      mode: replicated
+      replicas: 2
     restart: always
   nginx:
     image: nginx:latest

@@ -8,7 +8,7 @@ function Header() {
     const [hideHighscoreList, setHideHighscoreList] = useState(false);
   
     useEffect(() => {
-      if (location.pathname.startsWith("/game")) {
+      if (location.pathname.startsWith("/gameServer")) {
         setHideHeaderAndButton(true);
         setHideHighscoreList(true);
       } else {

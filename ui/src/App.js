@@ -9,14 +9,15 @@ import useToken from "./hooks/useToken";
 
 function App() {
 	const {token, removeToken, setToken} = useToken();
+  const isTokenUndefined = !token && token !== "" && token !== undefined
   return (
     <div className="app-container">
       <Header />
       <Routes>
-        <Route path="/" element={<MainMenue token={token} removeToken={removeToken}/>} />
-        <Route path="/lobby" element={<Lobby/>}/>
-        <Route path="/game/:id" element={<GameContainer/>}/>
-        <Route path="/CharacterCreation" element={<CharacterCreation />}/>
+        <Route path="/" element={<MainMenue isTokenUndefined={isTokenUndefined} removeToken={removeToken}/>} />
+        {!isTokenUndefined ? <Route path="/gameLobby" element={<Lobby/>}/> : <></>}
+        <Route path="/gameServer/:id" element={<GameContainer/>}/>
+        {!isTokenUndefined ? <Route path="/custom" element={<CharacterCreation />}/> : <></>}
         <Route path="/login" element={<Login setToken={setToken} />} />
       </Routes>
     </div>

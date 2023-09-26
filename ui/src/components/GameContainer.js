@@ -5,9 +5,9 @@ import MyCircleSocket from './MyCircleSocket';
 function GameContainer(props) {
   const { id } = useParams();
   if(id==="random") {
-    return (<MyCircleSocket serverUrl={"ws://"+baseUrl+"/randGame/ws"}/>);
+    return (<MyCircleSocket token={props.token} serverUrl={"ws://"+baseUrl+"/randGame/ws"}/>);
   } else {
-    return (<MyCircleSocket serverUrl={"ws://"+baseUrl+"/game/"+id+"/ws"}/>);
+    return (<MyCircleSocket token={props.token} serverUrl={"ws://"+baseUrl+"/game/"+id+"/ws"}/>);
   }
 }
 

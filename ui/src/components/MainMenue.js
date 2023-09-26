@@ -45,7 +45,7 @@ function MainMenue(props) {
         className="ant-btn"
         type="primary"
         block
-        onClick={() => navigate("/logout")} 
+        onClick={() => props.removeToken()} 
       >
         Ausloggen
       </Button> : <></>}

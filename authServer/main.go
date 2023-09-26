@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -14,6 +15,11 @@ import (
 type LoginData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+}
+
+type Player struct {
+	Username string `json:"username"`
+	Skin     string `json:"skin"`
 }
 
 type ResponseText struct {
@@ -80,6 +86,14 @@ func isTokenValid(c *gin.Context) {
 	}
 }
 
+func GetUserData(c *gin.Context) Player {
+	_, claims := ExtractToken(c)
+	username, _ := claims["user"].(string)
+	var player Player
+	ExecuteSQLRow("SELECT USERNAME, Skin FROM Player WHERE USERNAME=?", username).Scan(&player.Username, &player.Skin)
+	return player
+}
+
 func main() {
 	InitDB()
 	defer CloseDB()
@@ -98,6 +112,12 @@ func main() {
 
 	r.GET("/token", func(c *gin.Context) {
 		isTokenValid(c)
+	})
+
+	r.GET("/player", func(c *gin.Context) {
+		player := GetUserData(c)
+		fmt.Println(player)
+		c.IndentedJSON(http.StatusOK, player)
 	})
 
 	r.Run(":8081")

@@ -20,7 +20,7 @@ function createCircleNpc(Pcx, Pcy, Pcolor) {
 function MyCircleSocket(props) {
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 });
   const svgRef = useRef()
-  const { sendMessage, lastMessage } = useWebSocket(props.serverUrl);
+  const { sendMessage, lastMessage } = useWebSocket(props.serverUrl+ "/"+ (props.token ? props.token : "undefined"));
   const [playerObject, setPlayerObject] = useState([]);
   const [otherPlayerObjects, setOtherPlayerObjects] = useState([]);
   const [npcObjects, setNpcObjects] = useState([]);

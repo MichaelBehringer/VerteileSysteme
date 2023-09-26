@@ -2,15 +2,22 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/dhconnelly/rtreego"
 	"github.com/docker/docker/client"
 )
+
+type AccessToken struct {
+	AccessToken string `json:"accessToken"`
+}
 
 type Circle struct {
 	Id, Color int
@@ -130,4 +137,23 @@ func (s *Stack) Pop() (int, error) {
 
 func (s *Stack) IsEmpty() bool {
 	return len(s.items) == 0
+}
+
+func getTokenData(token string) (string, string) {
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", "http://auth:8081/player", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	res, _ := client.Do(req)
+	body, _ := io.ReadAll(res.Body)
+	var playerData map[string]interface{}
+	json.Unmarshal(body, &playerData)
+	username, _ := playerData["username"].(string)
+	skin, _ := playerData["skin"].(string)
+	return username, skin
+}
+
+func getRandomTokenData() (string, string) {
+	username := getPetNameSingle()
+	color := colors[rand.Intn(30)]
+	return username, color
 }

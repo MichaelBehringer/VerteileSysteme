@@ -16,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainMenue isTokenUndefined={isTokenUndefined} removeToken={removeToken}/>} />
         {!isTokenUndefined ? <Route path="/gameLobby" element={<Lobby/>}/> : <></>}
-        <Route path="/gameServer/:id" element={<GameContainer/>}/>
+        <Route path="/gameServer/:id" element={<GameContainer token={token}/>}/>
         {!isTokenUndefined ? <Route path="/custom" element={<CharacterCreation />}/> : <></>}
         <Route path="/login" element={<Login setToken={setToken} />} />
       </Routes>

@@ -64,6 +64,10 @@ type serverObj struct {
 	PlayerCounter int       `json:"playerCounter"`
 }
 
+type AuthHeader struct {
+	IDToken string `header:"Authorization"`
+}
+
 var mapBoundary = 5000.0
 
 var listConnections []connectionObj
@@ -75,6 +79,7 @@ var mapIdToPlayer map[uuid.UUID]int
 var stack *Stack
 var playerCounter int
 var gameServerId uuid.UUID
+var colors []string
 
 var treeNpc *rtreego.Rtree
 
@@ -129,7 +134,7 @@ func randFloat(min, max float64) float64 {
 	return min + rand.Float64()*(max-min)
 }
 
-func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
+func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Fehler beim Upgrade der Verbindung:", err)
@@ -141,6 +146,20 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Max Player reached")
 		return
 	}
+
+	var username string
+	var skin string
+	if token == "undefined" {
+		username, skin = getRandomTokenData()
+	} else {
+		username, skin = getTokenData(token)
+	}
+
+	fmt.Println(username, skin)
+	fmt.Println(getRandomTokenData())
+	fmt.Println(getRandomTokenData())
+	fmt.Println(getRandomTokenData())
+	fmt.Println(getRandomTokenData())
 
 	playerCounter += 1
 
@@ -198,6 +217,10 @@ func remove(s []connectionObj, i int) []connectionObj {
 func getPetName() string {
 	flag.Parse()
 	return petname.Generate(*words, *separator)
+}
+
+func getPetNameSingle() string {
+	return petname.Generate(1, "-")
 }
 
 func gameServerAlive(containerNo string, petName string) {
@@ -279,6 +302,12 @@ func main() {
 	playerCounter = 0
 	gameServerId = uuid.New()
 
+	colors = []string{
+		"red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua",
+		"orange", "pink", "brown", "gray", "black", "white", "cyan", "magenta", "violet", "indigo",
+		"navy", "silver", "gold", "bronze", "turquoise", "lavender", "plum", "coral", "ruby", "emerald",
+	}
+
 	r := gin.New()
 
 	// corse error; maybe delete later ?!?
@@ -289,8 +318,9 @@ func main() {
 	r.Use(cors.New(config))
 
 	// main websocket endpoint
-	r.GET("/ws", func(c *gin.Context) {
-		handleWebSocketConnection(c.Writer, c.Request)
+	r.GET("/ws/:token", func(c *gin.Context) {
+		token := c.Param("token")
+		handleWebSocketConnection(c.Writer, c.Request, token)
 	})
 
 	// debug enpoints

@@ -1,8 +1,9 @@
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
-function MainMenue() {
+function MainMenue(props) {
   const navigate = useNavigate();
+  const isTokenUndefined = !props.token && props.token !== "" && props.token !== undefined
   return (
     <div className="main-menu-container">
       <Button
@@ -13,31 +14,41 @@ function MainMenue() {
       >
         Schnelles Spiel
       </Button>
-      <Button
+      {!isTokenUndefined ? <Button
         className="ant-btn"
         type="primary"
         block
         onClick={() => navigate("/lobby")}
       >
         Lobby Suche
-      </Button>
+      </Button> : <></>}
 
-      <Button
+      {!isTokenUndefined ? <Button
         className="ant-btn"
         type="primary"
         block
         onClick={() => navigate("/characterCreation")}
       >
         Charakter Erstellung
-      </Button>
-      <Button
+      </Button> : <></>}
+
+      {isTokenUndefined ? <Button
         className="ant-btn"
         type="primary"
         block
         onClick={() => navigate("/login")} 
       >
         Einloggen
-      </Button>
+      </Button> : <></>}
+
+      {!isTokenUndefined ? <Button
+        className="ant-btn"
+        type="primary"
+        block
+        onClick={() => navigate("/logout")} 
+      >
+        Ausloggen
+      </Button> : <></>}
     </div>
   );
 }

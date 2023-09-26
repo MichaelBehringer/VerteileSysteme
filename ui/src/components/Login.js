@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { Button, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import { doCustomPostRequest } from "../helper/RequestHelper";
+import { myToastError } from "../helper/ToastHelper";
 
-function Login() {
+function Login(props) {
   const navigate = useNavigate();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -14,20 +14,15 @@ function Login() {
   const handleLogin = () => {
     const params = {username: username, password: password};
 		doCustomPostRequest("auth/token", params).then((response) => {
-			console.log(response.data)
+			props.setToken(response.data.accessToken);
+      navigate("/")
 		}, error => {
-			console.log(error)
+			if (error.response.status === 401) {
+				myToastError("Benutzername oder Passwort falsch!");
+			}
 			return error;
 		});
-    // Hier kannst du die Logik für den Login-Vorgang implementieren
-    // Zum Beispiel: Überprüfung der Anmeldeinformationen, Zustand des Benutzer-Logins usw.
-    // Für dieses Beispiel setzen wir isLoggedIn auf true.
-    // setIsLoggedIn(true);
   };
-
-  if (isLoggedIn) {
-    navigate("/"); // Leite den Benutzer zur Hauptseite (MainMenue) zurück, wenn eingeloggt
-  }
 
   return (
     <div className="login-container">

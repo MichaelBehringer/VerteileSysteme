@@ -8,13 +8,13 @@ const colors = ["red", "green", "blue", "yellow", "maroon", "purple", "lime", "o
 
 function createCircle(Pcx, Pcy, Pcolor, name, size) {
   return <>
-    <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" stroke-width="3" fill={colors[Pcolor]} />
+    <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" strokeWidth="3" fill={colors[Pcolor]} />
     <text key={"t"+name} x={Pcx - 50} y={Pcy + 20 + size} fontSize="20" fill="black">{name}</text>
   </>
 }
 
 function createCircleNpc(Pcx, Pcy, Pcolor) {
-  return <circle key={"c"+Pcx+"-"+Pcy} cx={Pcx} cy={Pcy} r="10" stroke={colors[Pcolor]} stroke-width="3" fill={colors[Pcolor]} />
+  return <circle key={"c"+Pcx+"-"+Pcy} cx={Pcx} cy={Pcy} r="10" stroke={colors[Pcolor]} strokeWidth="3" fill={colors[Pcolor]} />
 }
 
 function MyCircleSocket(props) {
@@ -92,8 +92,8 @@ function MyCircleSocket(props) {
   }
 
   return (
-    <div>
-      <svg className="karo-container" bac ref={svgRef} style={fullScreen} width={width} height={height}>
+    <svg className="karo-container" ref={svgRef} style={fullScreen} width={width} height={height}>
+      {playerObject.length !== 0 ? <>
         <rect x={-10 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={10} height={5010} />
         <rect x={5000 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={10} height={5010} />
         <rect x={0 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={5010} height={10} />
@@ -105,8 +105,8 @@ function MyCircleSocket(props) {
           createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.id, obj.size)
           )}
         {createCircle(playerObject.x - cameraPosition.x, playerObject.y - cameraPosition.y, playerObject.color, playerObject.id, playerObject.size)}
+        </>: <></>}
       </svg>
-    </div>
   );
 }
 

@@ -26,7 +26,6 @@ function Lobby() {
       key: 'action',
       render: (_, record) => (
         <Button onClick={()=>{
-          console.log(record)
           navigate("/game/"+record.address)
         }}>Beitreten</Button>
       ),

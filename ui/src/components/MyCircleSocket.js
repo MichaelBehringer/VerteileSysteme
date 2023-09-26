@@ -4,17 +4,15 @@ import useWindowDimensions from "../hooks/useWindowDimensions";
 
 let userPlayer = '';
 
-const colors = ["red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua"]
-
 function createCircle(Pcx, Pcy, Pcolor, name, size) {
   return <>
-    <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" strokeWidth="3" fill={colors[Pcolor]} />
-    <text key={"t"+name} x={Pcx - 50} y={Pcy + 20 + size} fontSize="20" fill="black">{name}</text>
+    <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" strokeWidth="3" fill={Pcolor} />
+    <text key={"t"+name} x={Pcx} y={Pcy + 20 + size} fontSize="20" fill="black" textAnchor="middle">{name}</text>
   </>
 }
 
 function createCircleNpc(Pcx, Pcy, Pcolor) {
-  return <circle key={"c"+Pcx+"-"+Pcy} cx={Pcx} cy={Pcy} r="10" stroke={colors[Pcolor]} strokeWidth="3" fill={colors[Pcolor]} />
+  return <circle key={"c"+Pcx+"-"+Pcy} cx={Pcx} cy={Pcy} r="10" stroke={Pcolor} strokeWidth="3" fill={"#191a17"} />
 }
 
 function MyCircleSocket(props) {
@@ -102,9 +100,9 @@ function MyCircleSocket(props) {
            createCircleNpc(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color)
         )}
         {otherPlayerObjects?.map(obj =>
-          createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.id, obj.size)
+          createCircle(obj.x - cameraPosition.x, obj.y - cameraPosition.y, obj.color, obj.name, obj.size)
           )}
-        {createCircle(playerObject.x - cameraPosition.x, playerObject.y - cameraPosition.y, playerObject.color, playerObject.id, playerObject.size)}
+        {createCircle(playerObject.x - cameraPosition.x, playerObject.y - cameraPosition.y, playerObject.color, playerObject.name, playerObject.size)}
         </>: <></>}
       </svg>
   );

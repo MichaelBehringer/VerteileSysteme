@@ -28,7 +28,8 @@ type connectionObj struct {
 type gameObj struct {
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
-	Color int     `json:"c"`
+	Color string  `json:"c"`
+	Name  string  `json:"n"`
 	Size  float64 `json:"s"`
 }
 
@@ -45,14 +46,15 @@ type finalTransfairObj struct {
 
 type transfairPlayer struct {
 	Id    uuid.UUID `json:"id"`
-	Color int       `json:"color"`
+	Color string    `json:"color"`
+	Name  string    `json:"name"`
 	Size  float64   `json:"size"`
 	X     float64   `json:"x"`
 	Y     float64   `json:"y"`
 }
 
 type transfaiNpc struct {
-	Color int     `json:"color"`
+	Color string  `json:"color"`
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
 }
@@ -155,16 +157,9 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 		username, skin = getTokenData(token)
 	}
 
-	fmt.Println(username, skin)
-	fmt.Println(getRandomTokenData())
-	fmt.Println(getRandomTokenData())
-	fmt.Println(getRandomTokenData())
-	fmt.Println(getRandomTokenData())
-
 	playerCounter += 1
 
 	// color for player
-	randomColor := rand.Intn(9)
 	uuidNode := uuid.New()
 	playerId, _ := stack.Pop()
 	defer stack.Push(playerId)
@@ -176,7 +171,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 	listConnections = append(listConnections, s)
 	defer removeUnusedConnection(uuidNode)
 
-	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: randomColor, Size: 20}
+	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: skin, Size: 20, Name: username}
 
 	// debug
 	fmt.Printf("New User: %d:-- %s\n", playerId, uuidNode)
@@ -236,7 +231,7 @@ func execGameServerAlive(containerNo string, petName string) {
 
 func initNPCs() {
 	for i := 0; i < 1200; i++ {
-		npc := gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: rand.Intn(10)}
+		npc := gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: colors[rand.Intn(30)]}
 		listNpcKoordinates[i] = npc
 		treeNpc.Insert(Circle{Id: 0, X: npc.X, Y: npc.Y, Radius: 10, Color: npc.Color})
 	}
@@ -280,7 +275,7 @@ func sendSingleUpdate(singleConn connectionObj) {
 	var objOtherPlayerT []transfairPlayer
 	for key, value := range mapIdToPlayer {
 		player := listPlayerKoordinates[value]
-		transfiarPlayerObj := transfairPlayer{Id: key, Color: player.Color, Size: player.Size, X: player.X, Y: player.Y}
+		transfiarPlayerObj := transfairPlayer{Id: key, Color: player.Color, Name: player.Name, Size: player.Size, X: player.X, Y: player.Y}
 		if key == singleConn.Key {
 			objPlayerT = transfiarPlayerObj
 		} else {
@@ -304,8 +299,8 @@ func main() {
 
 	colors = []string{
 		"red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua",
-		"orange", "pink", "brown", "gray", "black", "white", "cyan", "magenta", "violet", "indigo",
-		"navy", "silver", "gold", "bronze", "turquoise", "lavender", "plum", "coral", "ruby", "emerald",
+		"orange", "pink", "brown", "gray", "beige", "fuchsia", "cyan", "magenta", "violet", "indigo",
+		"navy", "silver", "gold", "hotPink", "turquoise", "lavender", "plum", "coral", "azure", "salmon",
 	}
 
 	r := gin.New()

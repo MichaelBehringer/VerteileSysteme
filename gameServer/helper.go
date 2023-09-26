@@ -20,9 +20,10 @@ type AccessToken struct {
 }
 
 type Circle struct {
-	Id, Color int
-	X, Y      float64
-	Radius    float64
+	Id     int
+	Color  string
+	X, Y   float64
+	Radius float64
 }
 
 func (c Circle) Bounds() *rtreego.Rect {
@@ -42,7 +43,7 @@ func npcCollision() {
 				if distance < searchCircle.Radius+otherCircle.Radius {
 					newX := randFloat(0, mapBoundary)
 					newY := randFloat(0, mapBoundary)
-					newColor := rand.Intn(9)
+					newColor := colors[rand.Intn(30)]
 					listNpcKoordinates[otherCircle.Id].X = newX
 					listNpcKoordinates[otherCircle.Id].Y = newY
 					listNpcKoordinates[otherCircle.Id].Color = newColor

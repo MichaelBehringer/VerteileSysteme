@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS Player (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Username VARCHAR(255) NOT NULL,
+    Gamename VARCHAR(255) NOT NULL,
     Skin VARCHAR(255),
     Passwort VARCHAR(255) NOT NULL
 );
@@ -52,8 +53,8 @@ SELECT ID, Servername, Servernumber, PlayerCounter
 FROM GameServer
 WHERE TIMESTAMPDIFF(SECOND, LastSeen, NOW()) <= 15;
 
-INSERT INTO Player (Username, Skin, Passwort) VALUES('Berry', 'superSkin', '123123');
-INSERT INTO Player (Username, Skin, Passwort) VALUES('Dj', 'okSkin', 'Dj');
-INSERT INTO Player (Username, Skin, Passwort) VALUES('MMMarco', 'keinSkin', 'abc');
+INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Berry', 'Berry', 'red', 'abc123');
+INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Dj', 'Dj', 'green', 'smash');
+INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Marco', 'Marco', 'blue', 'kommentar');
 
 INSERT INTO Highscore (Highscore, Player_ID) VALUES(69, 1);

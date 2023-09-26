@@ -7,6 +7,10 @@ export async function doPostRequest(path, param) {
 	return axios.post(url+path, param)
 }
 
+export async function doCustomPostRequest(path, param) {
+	return axios.post("http://"+baseUrl+"/"+path, param)
+}
+
 export async function doPostRequestAuth(path, param, auth) {
 	return axios.post(url+path, param, {headers: {Authorization: 'Bearer ' + auth}})
 }

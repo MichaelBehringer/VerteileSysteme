@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Input } from "antd";
 import { useNavigate } from "react-router-dom";
+import { doCustomPostRequest } from "../helper/RequestHelper";
 
 function Login() {
   const navigate = useNavigate();
@@ -11,10 +12,17 @@ function Login() {
 
   // Funktion, die aufgerufen wird, wenn der Benutzer sich einloggt
   const handleLogin = () => {
+    const params = {username: username, password: password};
+		doCustomPostRequest("auth/token", params).then((response) => {
+			console.log(response.data)
+		}, error => {
+			console.log(error)
+			return error;
+		});
     // Hier kannst du die Logik für den Login-Vorgang implementieren
     // Zum Beispiel: Überprüfung der Anmeldeinformationen, Zustand des Benutzer-Logins usw.
     // Für dieses Beispiel setzen wir isLoggedIn auf true.
-    setIsLoggedIn(true);
+    // setIsLoggedIn(true);
   };
 
   if (isLoggedIn) {

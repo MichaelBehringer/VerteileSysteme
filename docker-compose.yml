@@ -29,6 +29,14 @@ services:
     restart: always
     depends_on:
       - db
+  auth:
+    build: authServer
+    deploy:
+      mode: replicated
+      replicas: 2
+    restart: always
+    depends_on:
+      - db
   ui:
     build: ui
     deploy:

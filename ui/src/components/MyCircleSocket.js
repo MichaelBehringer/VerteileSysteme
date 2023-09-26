@@ -4,8 +4,6 @@ import useWindowDimensions from "../hooks/useWindowDimensions";
 
 let userPlayer = '';
 
-
-
 const colors = ["red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua"]
 
 function createCircle(Pcx, Pcy, Pcolor, name, size) {

@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainMenue token={token} removeToken={removeToken}/>} />
         <Route path="/lobby" element={<Lobby/>}/>
-        <Route path="/game/:id" element={<GameContainer />}/>
+        <Route path="/game/:id" element={<GameContainer/>}/>
         <Route path="/CharacterCreation" element={<CharacterCreation />}/>
         <Route path="/login" element={<Login setToken={setToken} />} />
       </Routes>

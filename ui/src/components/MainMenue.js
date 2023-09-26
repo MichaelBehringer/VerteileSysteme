@@ -10,7 +10,7 @@ function MainMenue(props) {
         className="ant-btn"
         type="primary"
         block
-        onClick={() => alert("gibts noch nicht")}
+        onClick={() => navigate("/game/random")}
       >
         Schnelles Spiel
       </Button>

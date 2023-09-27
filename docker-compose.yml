@@ -44,7 +44,7 @@ services:
       replicas: 2
     restart: always
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     volumes:
      - ./conf.d:/etc/nginx/conf.d
     ports:

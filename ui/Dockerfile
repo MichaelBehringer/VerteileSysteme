@@ -1,17 +1,14 @@
-# Verwenden Sie ein offizielles Node.js-Image als Basis
-FROM node:lts-alpine
+FROM node:lts-alpine AS build
 
-# Erstellen Sie das Arbeitsverzeichnis im Container
-WORKDIR /appUI
+WORKDIR /app
 
-# Kopieren Sie die Abhängigkeiten und den Code in den Container
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Bauen Sie die React-Anwendung
 RUN npm run build
-RUN npm install -g serve
 
-# Starten Sie die Anwendung
-CMD ["serve", "-s", "build"]
+# Erstellen Sie das endgültige Image auf Basis von Apache
+FROM httpd:2.4-alpine
+
+COPY --from=build /app/build/ /usr/local/apache2/htdocs/

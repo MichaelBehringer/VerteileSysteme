@@ -1,8 +1,7 @@
 # Erstellen Sie ein temporäres Build-Image
 FROM golang:1.21.1 AS build
 
-
-WORKDIR /appGameServer
+WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -14,8 +13,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./gameServer
 # Erstellen Sie das endgültige Image auf Basis von Distroless
 FROM gcr.io/distroless/base
 
-COPY --from=build /appGameServer/gameServer /appGameServer/gameServer
+COPY --from=build /app/gameServer /app/gameServer
 
-WORKDIR /appGameServer
+WORKDIR /app
 
 CMD ["./gameServer"]

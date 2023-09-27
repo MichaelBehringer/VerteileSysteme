@@ -37,7 +37,9 @@ function MyCircleSocket(props) {
     }
       setPlayerObject(messageData.player)
       setOtherPlayerObjects(messageData.otherPlayer)
-      setNpcObjects(messageData.npc)
+      if(messageData.npc) {
+        setNpcObjects(messageData.npc)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessage]);

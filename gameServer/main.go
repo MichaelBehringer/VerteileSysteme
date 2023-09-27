@@ -263,14 +263,17 @@ func checkCollission() {
 }
 
 func sendUpdate() {
+	count := 0
 	for range time.Tick(time.Second / 100) {
+		count++
+		sendNpcUpdate := count%25 == 0
 		for _, singleConn := range listConnections {
-			go sendSingleUpdate(singleConn)
+			go sendSingleUpdate(singleConn, sendNpcUpdate)
 		}
 	}
 }
 
-func sendSingleUpdate(singleConn connectionObj) {
+func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool) {
 	var objPlayerT transfairPlayer
 	var objOtherPlayerT []transfairPlayer
 	for key, value := range mapIdToPlayer {
@@ -282,7 +285,11 @@ func sendSingleUpdate(singleConn connectionObj) {
 			objOtherPlayerT = append(objOtherPlayerT, transfiarPlayerObj)
 		}
 	}
-	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: visibleNPC(objPlayerT)}
+	var objTransfairNpc []transfaiNpc
+	if sendNpcUpdate {
+		objTransfairNpc = visibleNPC(objPlayerT)
+	}
+	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objTransfairNpc}
 	singleConn.ConnMutex.Lock()
 	singleConn.Conn.WriteJSON(finalObjT)
 	singleConn.ConnMutex.Unlock()

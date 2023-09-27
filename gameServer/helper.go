@@ -61,7 +61,7 @@ func npcCollision() {
 func visibleNPC(playerObj transfairPlayer) []transfaiNpc {
 	var objNpcT []transfaiNpc
 
-	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 350.0}
+	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 500.0}
 
 	results := treeNpc.SearchIntersect(searchCircle.Bounds())
 	for _, result := range results {

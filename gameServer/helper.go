@@ -55,7 +55,7 @@ func npcCollision() {
 					listNpcKoordinates[otherCircle.Id].Y = newY
 					listNpcKoordinates[otherCircle.Id].Color = newColor
 					currSize := listPlayerKoordinates[searchCircle.Id].Size
-					if currSize > 500 {
+					if currSize > 200 {
 						listPlayerKoordinates[searchCircle.Id].Size = currSize + (10.0 / currSize)
 					} else {
 						listPlayerKoordinates[searchCircle.Id].Size = currSize + (50.0 / currSize)

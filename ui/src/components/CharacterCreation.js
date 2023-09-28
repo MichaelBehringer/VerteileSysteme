@@ -1,19 +1,54 @@
-import React, { useState } from 'react';
-import { App, ColorPicker } from 'antd';
-const Demo = () => {
-  const [value, setValue] = useState('#1677ff');
+import React, { useEffect, useState } from 'react';
+import { ColorPicker, Input } from 'antd';
+import { doGetRequestAuth, doPostRequestAuth } from '../helper/RequestHelper';
+import { myToastError, myToastSuccess } from '../helper/ToastHelper';
+
+function handleSave(data, token) {
+  const params = {skin: data.skin, gamename: data.gamename};
+  doPostRequestAuth("user", params, token).then((e) => {
+    if (e.status === 200) {
+      myToastSuccess('Speichern erfolgreich');
+    }}, error => {
+      myToastError('Fehler beim speichern aufgetreten');
+  })
+}
+
+function CharacterCreation(props) {
+  const [value, setValue] = useState();
+
+  useEffect(() => {
+    doGetRequestAuth('user', props.token).then(
+      res => {
+        setValue(res.data)
+      }
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <App>
-      <ColorPicker
-        value={value}
+    <div style={{width: "70%"}}>
+      <div>
+        <p>Username:</p>
+        <Input value={value?.username} disabled></Input>
+      </div>
+      <br />
+      <div>
+        <p>Anzeigename:</p>
+        <Input value={value?.gamename} onChange={(e)=>setValue({...value, gamename: e.target.value})}></Input>
+      </div>
+      <br />
+      <div>
+        <p>Farbe:</p>
+        <ColorPicker
+        value={value?.skin}
         onChangeComplete={(colorNew) => {
-          setValue(colorNew);
-          alert(`The selected color is ${colorNew.toHexString()}`);
-          //Post color to /player
-          //doPostRequest("/player", colorNew)
+          setValue({...value, skin: colorNew.toHexString()});
         }}
       />
-    </App>
+      </div>
+      <br />
+      <button type='primary' onClick={()=>handleSave(value, props.token)}>Speichern</button>
+      
+    </div>
   );
 };
-export default Demo;
+export default CharacterCreation;

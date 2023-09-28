@@ -55,7 +55,11 @@ func npcCollision() {
 					listNpcKoordinates[otherCircle.Id].Y = newY
 					listNpcKoordinates[otherCircle.Id].Color = newColor
 					currSize := listPlayerKoordinates[searchCircle.Id].Size
-					listPlayerKoordinates[searchCircle.Id].Size = currSize + (50.0 / currSize)
+					if currSize > 500 {
+						listPlayerKoordinates[searchCircle.Id].Size = currSize + (10.0 / currSize)
+					} else {
+						listPlayerKoordinates[searchCircle.Id].Size = currSize + (50.0 / currSize)
+					}
 
 					treeNpc.Delete(Circle{X: otherCircle.X, Y: otherCircle.Y, Radius: 10, Color: otherCircle.Color})
 					treeNpc.Insert(Circle{X: newX, Y: newY, Radius: 10, Color: newColor})

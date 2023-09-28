@@ -293,7 +293,7 @@ func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpd
 
 	for key, value := range mapIdToPlayer {
 		player := listPlayerKoordinates[value]
-		if key != singleConn.Key && math.Abs(userPlayer.X-player.X) < 600 && math.Abs(userPlayer.Y-player.Y) < 600 {
+		if key != singleConn.Key && math.Abs(userPlayer.X-player.X) < 1200 && math.Abs(userPlayer.Y-player.Y) < 1200 {
 			transfairPlayerObj := transfairPlayer{Color: player.Color, Name: player.Name, Size: player.Size, X: player.X, Y: player.Y}
 			objOtherPlayerT = append(objOtherPlayerT, transfairPlayerObj)
 		}

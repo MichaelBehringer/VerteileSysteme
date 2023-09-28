@@ -55,7 +55,7 @@ FROM GameServer
 WHERE TIMESTAMPDIFF(SECOND, LastSeen, NOW()) <= 15;
 
 CREATE or REPLACE VIEW HighscoreList AS
-SELECT p.Gamename, max(h.Score)
+select p.Gamename as Username, max(h.Score) as Score
 FROM Highscore h
 INNER JOIN Player p on h.Player_ID = p.ID
 GROUP BY p.ID

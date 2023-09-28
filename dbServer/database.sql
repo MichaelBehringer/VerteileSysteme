@@ -1,15 +1,16 @@
 CREATE TABLE IF NOT EXISTS Player (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
+    ID VARCHAR(36) PRIMARY KEY,
     Username VARCHAR(255) NOT NULL,
     Gamename VARCHAR(255) NOT NULL,
-    Skin VARCHAR(255),
+    Skin VARCHAR(255) NOT NULL,
     Passwort VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS Highscore (
-    Highscore INT,
-    Player_ID INT,
-    FOREIGN KEY (Player_ID) REFERENCES Player(ID)
+    Player_ID VARCHAR(36) NOT NULL,
+    Server_ID VARCHAR(36) NOT NULL,
+    Score INT NOT NULL,
+    PRIMARY KEY (Player_ID, Server_ID)
 );
 
 CREATE TABLE IF NOT EXISTS GameServer (
@@ -53,8 +54,23 @@ SELECT ID, Servername, Servernumber, PlayerCounter
 FROM GameServer
 WHERE TIMESTAMPDIFF(SECOND, LastSeen, NOW()) <= 15;
 
-INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Berry', 'Berry', 'red', 'abc123');
-INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Dj', 'Dj', 'green', 'smash');
-INSERT INTO Player (Username, Gamename, Skin, Passwort) VALUES('Marco', 'Marco', 'blue', 'kommentar');
+CREATE or REPLACE VIEW HighscoreList AS
+SELECT p.Gamename, max(h.Score)
+FROM Highscore h
+INNER JOIN Player p on h.Player_ID = p.ID
+GROUP BY p.ID
+ORDER BY h.Score desc
+LIMIT 5;
 
-INSERT INTO Highscore (Highscore, Player_ID) VALUES(69, 1);
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000001', 'Berry', 'Berry', 'red', 'abc123');
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000002', 'Dj', 'Dj', 'green', 'smash');
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000003', 'Marco', 'Marco', 'blue', 'kommentar');
+
+INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000010','open-blowfish',1,0,'2023-09-28 10:45:39.000');
+INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000020','summary-boa',1,0,'2023-09-28 12:06:27.000');
+INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000030','green-dog',1,0,'2023-09-28 12:07:27.000');
+
+INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000010', 69);
+INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000020', 40);
+INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000020', 70);
+INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000030', 2);

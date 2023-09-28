@@ -49,6 +49,35 @@ BEGIN
 END; //  
 DELIMITER ;
 
+DELIMITER // 
+CREATE OR REPLACE PROCEDURE InsertUpdateHighscore(
+	IN p_ServerId VARCHAR(36),
+	IN p_PlayerId VARCHAR(36),
+    IN p_Size INT
+)
+BEGIN
+    DECLARE v_RecordCount1 INT;
+    DECLARE v_RecordCount2 INT;
+   
+    -- Prüfen, ob User noch einen Highscore auf diesem Server hat
+    SELECT COUNT(*) INTO v_RecordCount1 FROM Highscore WHERE Player_ID = p_PlayerId AND Server_ID = p_ServerId;
+   
+    IF v_RecordCount1 > 0 THEN
+        -- Eintrag aktualisieren, nur wenn Size größer ist
+    	SELECT COUNT(*) INTO v_RecordCount2 FROM Highscore WHERE Player_ID = p_PlayerId AND Server_ID = p_ServerId AND Score < p_Size;
+    	IF v_RecordCount2 > 0 THEN
+        UPDATE Highscore
+        SET Score = p_Size
+        WHERE Player_ID = p_PlayerId AND Server_ID = p_ServerId;
+       END IF;
+    ELSE
+        -- Neuen Eintrag einfügen, wenn User noch keinen Highscore auf diesem Server hat
+        INSERT INTO Highscore (Player_ID, Server_ID, Score)
+        VALUES (p_PlayerId, p_ServerId, p_Size);
+    END IF;
+END; //  
+DELIMITER ;
+
 CREATE or REPLACE VIEW ActiveGameServer AS
 SELECT ID, Servername, Servernumber, PlayerCounter
 FROM GameServer
@@ -59,7 +88,7 @@ SELECT p.Gamename as Username, max(h.Score) as Score
 FROM Highscore h
 INNER JOIN Player p on h.Player_ID = p.ID
 GROUP BY p.ID
-ORDER BY h.Score desc
+ORDER BY 2 desc
 LIMIT 5;
 
 INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000001', 'Berry', 'Berry', 'red', 'abc123');

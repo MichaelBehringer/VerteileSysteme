@@ -217,6 +217,17 @@ func getPetNameSingle() string {
 	return petname.Generate(1, "-")
 }
 
+func updateHighscore(containerNo string) {
+	for range time.Tick(time.Second * 15) {
+		for idx, value := range mapIdToPlayer {
+			player := listPlayerKoordinates[value]
+			if player.IsLoggedIn {
+				ExecuteDDL("CALL InsertUpdateHighscore(?, ?, ?)", gameServerId, idx, player.Size)
+			}
+		}
+	}
+}
+
 func gameServerAlive(containerNo string, petName string) {
 	execGameServerAlive(containerNo, petName)
 	for range time.Tick(time.Second * 10) {
@@ -339,6 +350,7 @@ func main() {
 	serverPetName := getPetName()
 	containerNo := getContainerNo()
 	go gameServerAlive(containerNo, serverPetName)
+	go updateHighscore(containerNo)
 
 	fmt.Println("Game-Server started. Port: 8080")
 	r.Run(":8080")

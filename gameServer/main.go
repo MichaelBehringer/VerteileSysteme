@@ -47,12 +47,11 @@ type finalTransfairObj struct {
 }
 
 type transfairPlayer struct {
-	Id    uuid.UUID `json:"id"`
-	Color string    `json:"color"`
-	Name  string    `json:"name"`
-	Size  float64   `json:"size"`
-	X     float64   `json:"x"`
-	Y     float64   `json:"y"`
+	Color string  `json:"color"`
+	Name  string  `json:"name"`
+	Size  float64 `json:"size"`
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
 }
 
 type transfairNpc struct {
@@ -278,6 +277,7 @@ func sendUpdate() {
 		count++
 		sendNpcUpdate := count%25 == 0
 		sendScoreUpdate := count%200 == 0
+
 		for _, singleConn := range listConnections {
 			go sendSingleUpdate(singleConn, sendNpcUpdate, sendScoreUpdate)
 		}
@@ -287,15 +287,18 @@ func sendUpdate() {
 func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpdate bool) {
 	var objPlayerT transfairPlayer
 	var objOtherPlayerT []transfairPlayer
+
+	userPlayer := listPlayerKoordinates[mapIdToPlayer[singleConn.Key]]
+	objPlayerT = transfairPlayer{Color: userPlayer.Color, Name: userPlayer.Name, Size: userPlayer.Size, X: userPlayer.X, Y: userPlayer.Y}
+
 	for key, value := range mapIdToPlayer {
 		player := listPlayerKoordinates[value]
-		transfiarPlayerObj := transfairPlayer{Id: key, Color: player.Color, Name: player.Name, Size: player.Size, X: player.X, Y: player.Y}
-		if key == singleConn.Key {
-			objPlayerT = transfiarPlayerObj
-		} else {
-			objOtherPlayerT = append(objOtherPlayerT, transfiarPlayerObj)
+		if key != singleConn.Key && math.Abs(userPlayer.X-player.X) < 600 && math.Abs(userPlayer.Y-player.Y) < 600 {
+			transfairPlayerObj := transfairPlayer{Color: player.Color, Name: player.Name, Size: player.Size, X: player.X, Y: player.Y}
+			objOtherPlayerT = append(objOtherPlayerT, transfairPlayerObj)
 		}
 	}
+
 	var objTransfairNpc []transfairNpc
 	if sendNpcUpdate {
 		objTransfairNpc = visibleNPC(objPlayerT)

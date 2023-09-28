@@ -22,10 +22,10 @@ type AccessToken struct {
 }
 
 type Circle struct {
-	Id     int
-	Color  string
-	X, Y   float64
-	Radius float64
+	Id          int
+	Name, Color string
+	X, Y        float64
+	Radius      float64
 }
 
 type Player struct {

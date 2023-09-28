@@ -19,7 +19,6 @@ type LoginData struct {
 
 type Player struct {
 	Username string `json:"username"`
-	Skin     string `json:"skin"`
 }
 
 type ResponseText struct {
@@ -86,12 +85,16 @@ func isTokenValid(c *gin.Context) {
 	}
 }
 
-func GetUserData(c *gin.Context) Player {
-	_, claims := ExtractToken(c)
-	username, _ := claims["user"].(string)
-	var player Player
-	ExecuteSQLRow("SELECT USERNAME, Skin FROM Player WHERE USERNAME=?", username).Scan(&player.Username, &player.Skin)
-	return player
+func ReturnUserName(c *gin.Context) {
+	isAllowed, claims := ExtractToken(c)
+	fmt.Println(isAllowed, claims)
+	if !isAllowed {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	} else {
+		username, _ := claims["user"].(string)
+		player := Player{Username: username}
+		c.IndentedJSON(http.StatusOK, player)
+	}
 }
 
 func main() {
@@ -114,10 +117,8 @@ func main() {
 		isTokenValid(c)
 	})
 
-	r.GET("/player", func(c *gin.Context) {
-		player := GetUserData(c)
-		fmt.Println(player)
-		c.IndentedJSON(http.StatusOK, player)
+	r.GET("/user", func(c *gin.Context) {
+		ReturnUserName(c)
 	})
 
 	r.Run(":8081")

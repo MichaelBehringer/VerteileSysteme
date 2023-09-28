@@ -26,6 +26,11 @@ type Circle struct {
 	Radius float64
 }
 
+type Player struct {
+	Gamename string `json:"gamename"`
+	Skin     string `json:"skin"`
+}
+
 func (c Circle) Bounds() *rtreego.Rect {
 	return rtreego.Point{c.X, c.Y}.ToRect(c.Radius)
 }
@@ -142,15 +147,21 @@ func (s *Stack) IsEmpty() bool {
 
 func getTokenData(token string) (string, string) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "http://auth:8081/player", nil)
+	req, _ := http.NewRequest("GET", "http://auth:8081/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	res, _ := client.Do(req)
-	body, _ := io.ReadAll(res.Body)
-	var playerData map[string]interface{}
-	json.Unmarshal(body, &playerData)
-	username, _ := playerData["username"].(string)
-	skin, _ := playerData["skin"].(string)
-	return username, skin
+	if res.StatusCode == 200 {
+		body, _ := io.ReadAll(res.Body)
+		var playerData map[string]interface{}
+		json.Unmarshal(body, &playerData)
+		username, _ := playerData["username"].(string)
+		var player Player
+		ExecuteSQLRow("SELECT Gamename, Skin FROM Player WHERE USERNAME=?", username).Scan(&player.Gamename, &player.Skin)
+		return player.Gamename, player.Skin
+	} else {
+		return getRandomTokenData()
+	}
+
 }
 
 func getRandomTokenData() (string, string) {

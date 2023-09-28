@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -36,27 +37,11 @@ func main() {
 		c.JSON(http.StatusOK, GetGameServers())
 	})
 
-	r.GET("/player/:id", func(c *gin.Context) {
-		var dummyPlayer = Player{ID: uuid.New(), Username: "Michael", Color: "blue"}
-		c.JSON(http.StatusOK, dummyPlayer)
-	})
-
-	r.POST("/player", func(c *gin.Context) {
-		c.Status(http.StatusOK)
-	})
-
-	r.GET("/getUrl/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		var servernumber string
-		ExecuteSQLRow("select g.Servernumber from GameServer g where g.ID = ?", id).Scan(&servernumber)
-
-		c.JSON(http.StatusOK, servernumber)
-	})
-
 	r.GET("/highscores", func(c *gin.Context) {
 		functions := GetFunctions()
 		c.IndentedJSON(http.StatusOK, functions)
 	})
 
-	r.Run(":8090")
+	fmt.Println("Lobby-Server started. Port: 8081")
+	r.Run(":8081")
 }

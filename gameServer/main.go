@@ -325,14 +325,6 @@ func main() {
 		handleWebSocketConnection(c.Writer, c.Request, token)
 	})
 
-	// debug enpoints
-	r.GET("/players", func(c *gin.Context) {
-		fmt.Println("franz")
-		c.JSON(http.StatusOK, listConnections)
-	})
-
-	fmt.Println("WebSocket-Server gestartet. Lausche auf 8080")
-
 	initNPCs()
 	initStack()
 
@@ -344,5 +336,6 @@ func main() {
 	containerNo := getContainerNo()
 	go gameServerAlive(containerNo, serverPetName)
 
+	fmt.Println("Game-Server started. Port: 8080")
 	r.Run(":8080")
 }

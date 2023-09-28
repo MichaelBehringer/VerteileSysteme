@@ -147,7 +147,7 @@ func (s *Stack) IsEmpty() bool {
 
 func getTokenData(token string) (string, string) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", "http://auth:8081/user", nil)
+	req, _ := http.NewRequest("GET", "http://auth:8082/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 	res, _ := client.Do(req)
 	if res.StatusCode == 200 {

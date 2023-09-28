@@ -87,7 +87,6 @@ func isTokenValid(c *gin.Context) {
 
 func ReturnUserName(c *gin.Context) {
 	isAllowed, claims := ExtractToken(c)
-	fmt.Println(isAllowed, claims)
 	if !isAllowed {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	} else {
@@ -121,5 +120,6 @@ func main() {
 		ReturnUserName(c)
 	})
 
-	r.Run(":8081")
+	fmt.Println("Auth-Server started. Port: 8082")
+	r.Run(":8082")
 }

@@ -25,7 +25,7 @@ function CharacterCreation(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div style={{width: "70%"}}>
+    <div>
       <div>
         <p>Username:</p>
         <Input value={value?.username} disabled></Input>

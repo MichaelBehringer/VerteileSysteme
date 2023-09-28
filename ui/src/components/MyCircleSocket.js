@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useWebSocket } from "react-use-websocket/dist/lib/use-websocket";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import HighscoreList from "./HighscoreList";
 
 let userPlayer = '';
 
 function createCircle(Pcx, Pcy, Pcolor, name, size) {
   return <>
     <circle id="1" key={"c"+name} cx={Pcx} cy={Pcy} r={size} stroke="black" strokeWidth="3" fill={Pcolor} />
-    <text key={"t"+name} x={Pcx} y={Pcy + 20 + size} fontSize="20" fill="black" textAnchor="middle">{name}</text>
+    <text key={"name"+name} x={Pcx} y={Pcy + 20 + size} fontSize="20" fill="black" textAnchor="middle">{name}</text>
+    <text key={"size"+name} x={Pcx} y={Pcy+5} fontSize="20" fill="black" textAnchor="middle">{Math.round(size)}</text>
   </>
 }
 
@@ -22,6 +24,7 @@ function MyCircleSocket(props) {
   const [playerObject, setPlayerObject] = useState([]);
   const [otherPlayerObjects, setOtherPlayerObjects] = useState([]);
   const [npcObjects, setNpcObjects] = useState([]);
+  const [gameServerScores, setGameServerScores] = useState([]);
   const {width, height} = useWindowDimensions();
 
   useEffect(() => {
@@ -39,6 +42,9 @@ function MyCircleSocket(props) {
       setOtherPlayerObjects(messageData.otherPlayer)
       if(messageData.npc) {
         setNpcObjects(messageData.npc)
+      }
+      if(messageData.score) {
+        setGameServerScores(messageData.score)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +97,12 @@ function MyCircleSocket(props) {
     sendMessage(JSON.stringify({ x: newX, y: newY }));
   }
 
-  return (
+  return (<>
+    <div className="highscore-list">
+        👑 Gameserver Scores 👑 <br/>
+        • Name, Score: <br/>
+        <HighscoreList highscores={gameServerScores} />
+      </div>
     <svg className="karo-container" ref={svgRef} style={fullScreen} width={width} height={height}>
       {playerObject.length !== 0 ? <>
         <rect x={-10 - cameraPosition.x} y={-10 - cameraPosition.y} fill="white" width={10} height={5010} />
@@ -106,7 +117,7 @@ function MyCircleSocket(props) {
           )}
         {createCircle(playerObject.x - cameraPosition.x, playerObject.y - cameraPosition.y, playerObject.color, playerObject.name, playerObject.size)}
         </>: <></>}
-      </svg>
+      </svg></>
   );
 }
 

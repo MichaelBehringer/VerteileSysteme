@@ -1,35 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { doGetRequest } from "../helper/RequestHelper";
+import React from 'react';
 
-function HighscoreList() {
-  const [highscores, setHighscores] = useState(null); // Null als Initialwert
-
-
-  useEffect(() => {
-    doGetRequest('highscore').then(
-      res => {
-        setHighscores(
-          res.data.map(row => ({
-            highscore: row.Highscore,
-            name: row.Name
-          }))
-        );
-      }
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Wenn die Daten noch geladen werden, zeige eine Ladeanzeige
-  if (highscores === null) {
+function HighscoreList(props) {
+  if (props.highscores === null) {
     return <div>Loading... </div>;
   }
 
   // Zeige die gesamte JSON-Antwort
   return (
     <ul className="highscore-list">
-      {highscores.map((score, index) => (
+      {props.highscores.map((score, index) => (
         <li key={index}>
-          {score.name}, {score.highscore}
+          {score.name}, {Math.round(score.highscore)}
         </li>
       ))}
     </ul>
@@ -37,7 +18,3 @@ function HighscoreList() {
 }
 
 export default HighscoreList;
-
-
-
-

@@ -18,7 +18,7 @@ type LoginData struct {
 }
 
 type Player struct {
-	Username string `json:"username"`
+	UserId string `json:"userId"`
 }
 
 type ResponseText struct {
@@ -46,11 +46,13 @@ func CreateToken(loginData LoginData, c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+	var userId string
+	ExecuteSQLRow("SELECT ID FROM Player WHERE USERNAME=?", loginData.Username).Scan(&userId)
 
 	key = []byte("my_secret_key")
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"user":         loginData.Username,
+			"user":         userId,
 			"creationTime": time.Now().UnixNano(),
 		})
 	signedToken, _ = token.SignedString(key)
@@ -85,13 +87,13 @@ func isTokenValid(c *gin.Context) {
 	}
 }
 
-func ReturnUserName(c *gin.Context) {
+func returnTokenData(c *gin.Context) {
 	isAllowed, claims := ExtractToken(c)
 	if !isAllowed {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	} else {
-		username, _ := claims["user"].(string)
-		player := Player{Username: username}
+		userId, _ := claims["user"].(string)
+		player := Player{UserId: userId}
 		c.IndentedJSON(http.StatusOK, player)
 	}
 }
@@ -117,7 +119,7 @@ func main() {
 	})
 
 	r.GET("/user", func(c *gin.Context) {
-		ReturnUserName(c)
+		returnTokenData(c)
 	})
 
 	fmt.Println("Auth-Server started. Port: 8082")

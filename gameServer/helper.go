@@ -9,10 +9,12 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/dhconnelly/rtreego"
 	"github.com/docker/docker/client"
+	"github.com/google/uuid"
 )
 
 type AccessToken struct {
@@ -63,17 +65,33 @@ func npcCollision() {
 	}
 }
 
-func visibleNPC(playerObj transfairPlayer) []transfaiNpc {
-	var objNpcT []transfaiNpc
+func visibleNPC(playerObj transfairPlayer) []transfairNpc {
+	var objNpcT []transfairNpc
 
 	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 500.0}
 
 	results := treeNpc.SearchIntersect(searchCircle.Bounds())
 	for _, result := range results {
 		otherCircle := result.(Circle)
-		objNpcT = append(objNpcT, transfaiNpc{Color: otherCircle.Color, X: otherCircle.X, Y: otherCircle.Y})
+		objNpcT = append(objNpcT, transfairNpc{Color: otherCircle.Color, X: otherCircle.X, Y: otherCircle.Y})
 	}
 	return objNpcT
+}
+
+func getScore(playerObj transfairPlayer) []transfairScore {
+	transfairScores := []transfairScore{}
+	for _, value := range mapIdToPlayer {
+		player := listPlayerKoordinates[value]
+		transfairScores = append(transfairScores, transfairScore{Name: player.Name, Score: player.Size})
+	}
+	sort.Slice(transfairScores, func(i, j int) bool {
+		return transfairScores[i].Score > transfairScores[j].Score
+	})
+	if len(transfairScores) >= 5 {
+		return transfairScores[:5]
+	} else {
+		return transfairScores
+	}
 }
 
 func playerCollision() {
@@ -145,7 +163,7 @@ func (s *Stack) IsEmpty() bool {
 	return len(s.items) == 0
 }
 
-func getTokenData(token string) (string, string) {
+func getTokenData(token string) (string, string, uuid.UUID) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "http://auth:8082/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -154,18 +172,18 @@ func getTokenData(token string) (string, string) {
 		body, _ := io.ReadAll(res.Body)
 		var playerData map[string]interface{}
 		json.Unmarshal(body, &playerData)
-		username, _ := playerData["username"].(string)
+		userId, _ := playerData["userId"].(string)
+		playerUUid, _ := uuid.Parse(userId)
 		var player Player
-		ExecuteSQLRow("SELECT Gamename, Skin FROM Player WHERE USERNAME=?", username).Scan(&player.Gamename, &player.Skin)
-		return player.Gamename, player.Skin
+		ExecuteSQLRow("SELECT Gamename, Skin FROM Player WHERE ID=?", userId).Scan(&player.Gamename, &player.Skin)
+		return player.Gamename, player.Skin, playerUUid
 	} else {
 		return getRandomTokenData()
 	}
-
 }
 
-func getRandomTokenData() (string, string) {
+func getRandomTokenData() (string, string, uuid.UUID) {
 	username := getPetNameSingle()
 	color := colors[rand.Intn(30)]
-	return username, color
+	return username, color, uuid.New()
 }

@@ -26,11 +26,12 @@ type connectionObj struct {
 }
 
 type gameObj struct {
-	X     float64 `json:"x"`
-	Y     float64 `json:"y"`
-	Color string  `json:"c"`
-	Name  string  `json:"n"`
-	Size  float64 `json:"s"`
+	X          float64 `json:"x"`
+	Y          float64 `json:"y"`
+	Color      string  `json:"color"`
+	Name       string  `json:"name"`
+	Size       float64 `json:"size"`
+	IsLoggedIn bool    `json:"isLoggendIn"`
 }
 
 type targetObj struct {
@@ -41,7 +42,8 @@ type targetObj struct {
 type finalTransfairObj struct {
 	Player      transfairPlayer   `json:"player"`
 	OtherPlayer []transfairPlayer `json:"otherPlayer"`
-	NPC         []transfaiNpc     `json:"npc"`
+	NPC         []transfairNpc    `json:"npc"`
+	Score       []transfairScore  `json:"score"`
 }
 
 type transfairPlayer struct {
@@ -53,17 +55,15 @@ type transfairPlayer struct {
 	Y     float64   `json:"y"`
 }
 
-type transfaiNpc struct {
+type transfairNpc struct {
 	Color string  `json:"color"`
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
 }
 
-type serverObj struct {
-	Id            uuid.UUID `json:"id"`
-	PetName       string    `json:"petName"`
-	Address       string    `json:"address"`
-	PlayerCounter int       `json:"playerCounter"`
+type transfairScore struct {
+	Name  string  `json:"name"`
+	Score float64 `json:"highscore"`
 }
 
 type AuthHeader struct {
@@ -151,16 +151,15 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 
 	var username string
 	var skin string
-	if token == "undefined" {
-		username, skin = getRandomTokenData()
+	var uuidNode uuid.UUID
+	isLoggedIn := token != "undefined"
+	if isLoggedIn {
+		username, skin, uuidNode = getTokenData(token)
 	} else {
-		username, skin = getTokenData(token)
+		username, skin, uuidNode = getRandomTokenData()
 	}
 
 	playerCounter += 1
-
-	// color for player
-	uuidNode := uuid.New()
 	playerId, _ := stack.Pop()
 	defer stack.Push(playerId)
 
@@ -171,7 +170,7 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 	listConnections = append(listConnections, s)
 	defer removeUnusedConnection(uuidNode)
 
-	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: skin, Size: 20, Name: username}
+	listPlayerKoordinates[playerId] = gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: skin, Size: 20, Name: username, IsLoggedIn: isLoggedIn}
 
 	// debug
 	fmt.Printf("New User: %d:-- %s\n", playerId, uuidNode)
@@ -267,13 +266,14 @@ func sendUpdate() {
 	for range time.Tick(time.Second / 100) {
 		count++
 		sendNpcUpdate := count%25 == 0
+		sendScoreUpdate := count%200 == 0
 		for _, singleConn := range listConnections {
-			go sendSingleUpdate(singleConn, sendNpcUpdate)
+			go sendSingleUpdate(singleConn, sendNpcUpdate, sendScoreUpdate)
 		}
 	}
 }
 
-func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool) {
+func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpdate bool) {
 	var objPlayerT transfairPlayer
 	var objOtherPlayerT []transfairPlayer
 	for key, value := range mapIdToPlayer {
@@ -285,11 +285,15 @@ func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool) {
 			objOtherPlayerT = append(objOtherPlayerT, transfiarPlayerObj)
 		}
 	}
-	var objTransfairNpc []transfaiNpc
+	var objTransfairNpc []transfairNpc
 	if sendNpcUpdate {
 		objTransfairNpc = visibleNPC(objPlayerT)
 	}
-	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objTransfairNpc}
+	var objTransfairScore []transfairScore
+	if sendScoreUpdate {
+		objTransfairScore = getScore(objPlayerT)
+	}
+	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objTransfairNpc, Score: objTransfairScore}
 	singleConn.ConnMutex.Lock()
 	singleConn.Conn.WriteJSON(finalObjT)
 	singleConn.ConnMutex.Unlock()

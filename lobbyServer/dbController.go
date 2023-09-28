@@ -46,11 +46,11 @@ func ExecuteDDL(statement string, params ...interface{}) sql.Result {
 }
 
 func GetFunctions() []Highscore {
-	results := ExecuteSQL("SELECT Highscore, Username FROM Highscore JOIN Player ON Highscore.Player_ID = Player.ID ORDER BY Highscore DESC LIMIT 10")
+	results := ExecuteSQL("SELECT Username, Score FROM HighscoreList")
 	functions := []Highscore{}
 	for results.Next() {
 		var function Highscore
-		results.Scan(&function.Highscore, &function.Name)
+		results.Scan(&function.Name, &function.Highscore)
 		functions = append(functions, function)
 	}
 	return functions

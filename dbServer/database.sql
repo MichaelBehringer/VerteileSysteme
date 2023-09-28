@@ -55,7 +55,7 @@ FROM GameServer
 WHERE TIMESTAMPDIFF(SECOND, LastSeen, NOW()) <= 15;
 
 CREATE or REPLACE VIEW HighscoreList AS
-select p.Gamename as Username, max(h.Score) as Score
+SELECT p.Gamename as Username, max(h.Score) as Score
 FROM Highscore h
 INNER JOIN Player p on h.Player_ID = p.ID
 GROUP BY p.ID
@@ -67,8 +67,8 @@ INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-000
 INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000003', 'Marco', 'Marco', 'blue', 'kommentar');
 
 INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000010','open-blowfish',1,0,'2023-09-28 10:45:39.000');
-INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000020','summary-boa',1,0,'2023-09-28 12:06:27.000');
-INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000030','green-dog',1,0,'2023-09-28 12:07:27.000');
+INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000020','summary-boa',2,0,'2023-09-28 12:06:27.000');
+INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000030','green-dog',3,0,'2023-09-28 12:07:27.000');
 
 INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000010', 69);
 INSERT INTO Highscore (Player_ID, Server_ID, Score) VALUES('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000020', 40);

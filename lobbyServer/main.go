@@ -33,13 +33,18 @@ func main() {
 	config.AllowHeaders = []string{"Content-Type", "Content-Length", "Accept-Encoding", "Authorization", "Cache-Control"}
 	r.Use(cors.New(config))
 
-	r.GET("/listServer", func(c *gin.Context) {
+	//TODO Endpoint schützen?
+	r.GET("/server", func(c *gin.Context) {
 		c.JSON(http.StatusOK, GetGameServers())
 	})
 
-	r.GET("/highscores", func(c *gin.Context) {
+	r.GET("/highscore", func(c *gin.Context) {
 		functions := GetFunctions()
 		c.IndentedJSON(http.StatusOK, functions)
+	})
+
+	r.POST("/user", func(c *gin.Context) {
+
 	})
 
 	fmt.Println("Lobby-Server started. Port: 8081")

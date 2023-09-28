@@ -35,7 +35,7 @@ function Lobby() {
   const [servers, setServers] = useState([]);
 
   useEffect(() => {
-    doGetRequest('listServer').then(
+    doGetRequest('server').then(
       res => {
         setServers(
           res.data.map(row => ({

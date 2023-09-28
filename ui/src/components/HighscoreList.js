@@ -6,7 +6,7 @@ function HighscoreList() {
 
 
   useEffect(() => {
-    doGetRequest('highscores').then(
+    doGetRequest('highscore').then(
       res => {
         setHighscores(
           res.data.map(row => ({

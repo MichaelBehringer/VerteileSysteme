@@ -158,6 +158,11 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 		username, skin, uuidNode = getRandomTokenData()
 	}
 
+	if mapIdToPlayer[uuidNode] != 0 {
+		fmt.Println("Player already in game")
+		return
+	}
+
 	playerCounter += 1
 	playerId, _ := stack.Pop()
 	defer stack.Push(playerId)

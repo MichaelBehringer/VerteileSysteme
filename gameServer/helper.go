@@ -1,88 +1,20 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
+	"flag"
 	"io"
-	"math"
 	"math/rand"
 	"net/http"
-	"os"
 	"sort"
-	"strings"
+	"time"
 
-	"github.com/dhconnelly/rtreego"
-	"github.com/docker/docker/client"
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/google/uuid"
 )
 
-type AccessToken struct {
-	AccessToken string `json:"accessToken"`
-}
-
-type Circle struct {
-	Id          int
-	Name, Color string
-	X, Y        float64
-	Radius      float64
-}
-
-type Player struct {
-	Gamename string `json:"gamename"`
-	Skin     string `json:"skin"`
-}
-
-func (c Circle) Bounds() *rtreego.Rect {
-	return rtreego.Point{c.X, c.Y}.ToRect(c.Radius)
-}
-
-func npcCollision() {
-	for _, value := range mapIdToPlayer {
-		player := listPlayerKoordinates[value]
-		searchCircle := Circle{Id: value, X: player.X, Y: player.Y, Radius: float64(player.Size)}
-
-		results := treeNpc.SearchIntersect(searchCircle.Bounds())
-		for _, result := range results {
-			otherCircle := result.(Circle)
-			if searchCircle != otherCircle {
-				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
-				if distance < searchCircle.Radius+otherCircle.Radius {
-					newX := randFloat(0, mapBoundary)
-					newY := randFloat(0, mapBoundary)
-					newColor := colors[rand.Intn(30)]
-					listNpcKoordinates[otherCircle.Id].X = newX
-					listNpcKoordinates[otherCircle.Id].Y = newY
-					listNpcKoordinates[otherCircle.Id].Color = newColor
-					currSize := listPlayerKoordinates[searchCircle.Id].Size
-					if currSize > 200 {
-						listPlayerKoordinates[searchCircle.Id].Size = currSize + (10.0 / currSize)
-					} else {
-						listPlayerKoordinates[searchCircle.Id].Size = currSize + (50.0 / currSize)
-					}
-
-					treeNpc.Delete(Circle{X: otherCircle.X, Y: otherCircle.Y, Radius: 10, Color: otherCircle.Color})
-					treeNpc.Insert(Circle{X: newX, Y: newY, Radius: 10, Color: newColor})
-				}
-			}
-		}
-	}
-}
-
-func visibleNPC(playerObj transfairPlayer) []transfairNpc {
-	var objNpcT []transfairNpc
-
-	searchCircle := Circle{X: playerObj.X, Y: playerObj.Y, Radius: 500.0}
-
-	results := treeNpc.SearchIntersect(searchCircle.Bounds())
-	for _, result := range results {
-		otherCircle := result.(Circle)
-		objNpcT = append(objNpcT, transfairNpc{Color: otherCircle.Color, X: otherCircle.X, Y: otherCircle.Y})
-	}
-	return objNpcT
-}
-
-func getScore(playerObj transfairPlayer) []transfairScore {
+// Loops over all Players and returns the top 5 with the highest scores
+func getScore() []transfairScore {
 	transfairScores := []transfairScore{}
 	for _, value := range mapIdToPlayer {
 		player := listPlayerKoordinates[value]
@@ -98,76 +30,9 @@ func getScore(playerObj transfairPlayer) []transfairScore {
 	}
 }
 
-func playerCollision() {
-	tree := rtreego.NewTree(2, 25, 50)
-
-	for _, value := range mapIdToPlayer {
-		player := listPlayerKoordinates[value]
-		tree.Insert(Circle{Id: value, X: player.X, Y: player.Y, Radius: float64(player.Size)})
-	}
-
-	for _, value := range mapIdToPlayer {
-		player := listPlayerKoordinates[value]
-		searchCircle := Circle{Id: value, X: player.X, Y: player.Y, Radius: float64(player.Size)}
-
-		results := tree.SearchIntersect(searchCircle.Bounds())
-		for _, result := range results {
-			otherCircle := result.(Circle)
-			if searchCircle != otherCircle {
-				distance := math.Sqrt(math.Pow(searchCircle.X-otherCircle.X, 2) + math.Pow(searchCircle.Y-otherCircle.Y, 2))
-				if distance < searchCircle.Radius+otherCircle.Radius {
-					if listPlayerKoordinates[searchCircle.Id].Size > listPlayerKoordinates[otherCircle.Id].Size {
-						listPlayerKoordinates[otherCircle.Id].X = randFloat(0, mapBoundary)
-						listPlayerKoordinates[otherCircle.Id].Y = randFloat(0, mapBoundary)
-						deadSize := listPlayerKoordinates[otherCircle.Id].Size
-						listPlayerKoordinates[otherCircle.Id].Size = 20
-						listPlayerKoordinates[searchCircle.Id].Size += (deadSize / 10)
-					}
-				}
-			}
-		}
-	}
-}
-
-func getContainerNo() string {
-	cli, _ := client.NewClientWithOpts(client.FromEnv)
-	containerID, _ := os.Hostname()
-	containerInfo, _ := cli.ContainerInspect(context.Background(), containerID)
-	containerName := containerInfo.Name[1:]
-	splitFunc := func(r rune) bool {
-		return r == '-' || r == '_'
-	}
-	containerName = strings.FieldsFunc(containerName, splitFunc)[2]
-	return containerName
-}
-
-type Stack struct {
-	items []int
-}
-
-func NewStack() *Stack {
-	return &Stack{}
-}
-
-func (s *Stack) Push(item int) {
-	s.items = append(s.items, item)
-}
-
-func (s *Stack) Pop() (int, error) {
-	if s.IsEmpty() {
-		return 0, fmt.Errorf("Stack is empty")
-	}
-	index := len(s.items) - 1
-	item := s.items[index]
-	s.items = s.items[:index]
-	return item, nil
-}
-
-func (s *Stack) IsEmpty() bool {
-	return len(s.items) == 0
-}
-
+// get userid from token, and uservalues from database
 func getTokenData(token string) (string, string, uuid.UUID) {
+	// userId from token; Auth-Service needed for getting Value of Token
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", "http://auth:8082/user", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -186,8 +51,45 @@ func getTokenData(token string) (string, string, uuid.UUID) {
 	}
 }
 
+// If user has no token, generate random username and color
 func getRandomTokenData() (string, string, uuid.UUID) {
 	username := getPetNameSingle()
 	color := colors[rand.Intn(30)]
 	return username, color, uuid.New()
+}
+
+func randFloat(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
+// get random server name
+func getPetName() string {
+	flag.Parse()
+	return petname.Generate(2, "-")
+}
+
+// get random user name
+func getPetNameSingle() string {
+	return petname.Generate(1, "-")
+}
+
+// calls stored procedure for updating highscore; Logic when Highscore is updated is in the Database
+func updateHighscore(containerNo string) {
+	for range time.Tick(time.Second * 15) {
+		for idx, value := range mapIdToPlayer {
+			player := listPlayerKoordinates[value]
+			if player.IsLoggedIn {
+				ExecuteDDL("CALL InsertUpdateHighscore(?, ?, ?)", gameServerId, idx, player.Size)
+			}
+		}
+	}
+}
+
+// generating random coordinates and colors for initial NPCs
+func initNPCs() {
+	for i := 0; i < 1200; i++ {
+		npc := gameObj{X: randFloat(0, mapBoundary), Y: randFloat(0, mapBoundary), Color: colors[rand.Intn(30)]}
+		listNpcKoordinates[i] = npc
+		treeNpc.Insert(Circle{Id: 0, X: npc.X, Y: npc.Y, Radius: 10, Color: npc.Color})
+	}
 }

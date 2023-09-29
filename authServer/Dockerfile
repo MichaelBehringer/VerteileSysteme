@@ -14,6 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ./authServer
 FROM gcr.io/distroless/base
 
 COPY --from=build /app/authServer /app/authServer
+COPY .env /app/.env
 
 WORKDIR /app
 

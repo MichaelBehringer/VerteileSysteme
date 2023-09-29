@@ -16,14 +16,14 @@ function handleSave(data, token) {
 function CharacterCreation(props) {
   const [value, setValue] = useState();
 
-  // useEffect(() => {
-  //   doGetRequestAuth('user', props.token).then(
-  //     res => {
-  //       setValue(res.data)
-  //     }
-  //   )
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
+  useEffect(() => {
+    doGetRequestAuth('user', props.token).then(
+      res => {
+        setValue(res.data)
+      }
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div>
       <div>

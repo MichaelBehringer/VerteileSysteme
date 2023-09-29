@@ -16,37 +16,40 @@ function handleSave(data, token) {
 function CharacterCreation(props) {
   const [value, setValue] = useState();
 
-  useEffect(() => {
-    doGetRequestAuth('user', props.token).then(
-      res => {
-        setValue(res.data)
-      }
-    )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   doGetRequestAuth('user', props.token).then(
+  //     res => {
+  //       setValue(res.data)
+  //     }
+  //   )
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
   return (
     <div>
       <div>
-        <p>Username:</p>
-        <Input value={value?.username} disabled></Input>
+        <p class='text1'>Username:</p>
+        <Input value={value?.username} disabled style={{ backgroundColor: 'white' }}
+></Input>
       </div>
       <br />
       <div>
-        <p>Anzeigename:</p>
+        <p class='text1'>Anzeigename:</p>
         <Input value={value?.gamename} onChange={(e)=>setValue({...value, gamename: e.target.value})}></Input>
       </div>
       <br />
       <div>
-        <p>Farbe:</p>
+        <p class='text1'>Farbe:</p>
+        <center>
         <ColorPicker
         value={value?.skin}
         onChangeComplete={(colorNew) => {
           setValue({...value, skin: colorNew.toHexString()});
         }}
       />
+      </center>
       </div>
       <br />
-      <button type='primary' onClick={()=>handleSave(value, props.token)}>Speichern</button>
+      <button class='button' type='primary' onClick={()=>handleSave(value, props.token)}>Speichern</button>
       
     </div>
   );

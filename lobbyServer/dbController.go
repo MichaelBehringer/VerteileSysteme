@@ -10,11 +10,6 @@ import (
 var db *sql.DB
 var err error
 
-type Highscore struct {
-	Highscore int    `json:"Highscore"`
-	Name      string `json:"Name"`
-}
-
 func InitDB() {
 	db, err = sql.Open("mysql", "gogo:gogo@tcp(db:3306)/gogoGameDB")
 	if err != nil {
@@ -43,26 +38,4 @@ func ExecuteSQLRow(statement string, params ...interface{}) *sql.Row {
 func ExecuteDDL(statement string, params ...interface{}) sql.Result {
 	result, _ := db.Exec(statement, params...)
 	return result
-}
-
-func GetFunctions() []Highscore {
-	results := ExecuteSQL("SELECT Username, Score FROM HighscoreList")
-	functions := []Highscore{}
-	for results.Next() {
-		var function Highscore
-		results.Scan(&function.Name, &function.Highscore)
-		functions = append(functions, function)
-	}
-	return functions
-}
-
-func GetGameServers() []Server {
-	results := ExecuteSQL("select ID, Servername, Servernumber, PlayerCounter from ActiveGameServer")
-	servers := []Server{}
-	for results.Next() {
-		var server Server
-		results.Scan(&server.ID, &server.PetName, &server.Address, &server.PlayerCount)
-		servers = append(servers, server)
-	}
-	return servers
 }

@@ -28,7 +28,7 @@ function MainMenue(props) {
         block
         onClick={() => navigate("/custom")}
       >
-        Charakter Erstellung
+        Charaktererstellung
       </Button> : <></>}
 
       {props.isTokenUndefined ? <Button

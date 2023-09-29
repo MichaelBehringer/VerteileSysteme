@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -40,12 +41,19 @@ func CreateToken(loginData LoginData, c *gin.Context) {
 		signedToken string
 	)
 
-	var isAllowed bool
-	ExecuteSQLRow("SELECT COUNT(*) FROM Player WHERE USERNAME=? AND PASSWORT=?", loginData.Username, loginData.Password).Scan(&isAllowed)
-	if !isAllowed {
+	var password string
+	ExecuteSQLRow("SELECT PASSWORT FROM Player WHERE USERNAME=?", loginData.Username).Scan(&password)
+	if password == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(password), []byte(loginData.Password))
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
 	var userId string
 	ExecuteSQLRow("SELECT ID FROM Player WHERE USERNAME=?", loginData.Username).Scan(&userId)
 

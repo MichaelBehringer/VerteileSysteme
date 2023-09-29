@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -131,7 +132,8 @@ func main() {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
-		ExecuteDDL("INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES(?, ?, ?, ?, ?)", uuid.New(), player.Username, player.Username, colors[rand.Intn(30)], player.Password)
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(player.Password), bcrypt.DefaultCost)
+		ExecuteDDL("INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES(?, ?, ?, ?, ?)", uuid.New(), player.Username, player.Username, colors[rand.Intn(30)], hashedPassword)
 		c.Status(http.StatusOK)
 	})
 

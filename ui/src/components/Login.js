@@ -37,11 +37,11 @@ function Login(props) {
     setIsModalOpen(true);
   };
 
-  // Funktion, die aufgerufen wird, wenn der Benutzer sich einloggt
   const handleLogin = () => {
     const params = {username: username, password: password};
 		doCustomPostRequest("auth/token", params).then((response) => {
 			props.setToken(response.data.accessToken);
+      myToastSuccess('Hallo ' + username + '!');
       navigate("/")
 		}, error => {
 			if (error.response.status === 401) {

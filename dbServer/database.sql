@@ -91,9 +91,9 @@ GROUP BY p.ID
 ORDER BY 2 desc
 LIMIT 5;
 
-INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000001', 'Berry', 'Berry', 'red', 'abc123');
-INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000002', 'Dj', 'Dj', 'green', 'smash');
-INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000003', 'Marco', 'Marco', 'blue', 'kommentar');
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000001', 'Berry', 'Berry', 'red', '$2a$10$tUzJV0YbSIarbIUE7G45pOGdVIw3H3WlFhNobAIoqn9nKUGUaCFC6');
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000002', 'Dj', 'Dj', 'green', '$2a$10$AZKcCeuzK4prMrh8tezR5OIcgmZ9MvE.SkWoFktnm99XwZ4Zp.WxS');
+INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES('00000000-0000-0000-0000-000000000003', 'Marco', 'Marco', 'blue', '$2a$10$NDCnCoLBNUhCYK1OER7Ezubs9NX4DQL.KfTe.xgvHOm/mkgCuQMaW');
 
 INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000010','open-blowfish',1,0,'2023-09-28 10:45:39.000');
 INSERT INTO GameServer (ID, Servername, Servernumber, PlayerCounter, LastSeen) VALUES ('00000000-0000-0000-0000-000000000020','summary-boa',2,0,'2023-09-28 12:06:27.000');

@@ -16,19 +16,23 @@ function Login(props) {
 
   const handleReg = () => {
     const params = {username: usernameReg, password: passwordReg};
-    doPutRequestAuth("user", params, props.token).then(() => {
-      myToastSuccess('Anlegen erfolgreich');
-      setUsernameReg("")
-      setPasswordReg("")
-      setIsModalOpen(false);
-		}, error => {
-			if (error.response.status === 400) {
-				myToastError("Username bereits vorhanden!");
-			} else {
-        myToastError("Fehler!");
-      }
-			return error;
-		});
+    if(usernameReg.trim() !== "" && passwordReg.trim() !== "") {
+      doPutRequestAuth("user", params, props.token).then(() => {
+        myToastSuccess('Anlegen erfolgreich');
+        setUsernameReg("")
+        setPasswordReg("")
+        setIsModalOpen(false);
+      }, error => {
+        if (error.response.status === 400) {
+          myToastError("Username bereits vorhanden!");
+        } else {
+          myToastError("Fehler!");
+        }
+        return error;
+      });
+    } else {
+      myToastError("Username und Passwort dürfen nicht leer sein!");
+    }
   };
 
   const openModal = () => {

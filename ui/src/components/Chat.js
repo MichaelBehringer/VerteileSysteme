@@ -17,7 +17,7 @@ function Chat(props) {
 
   return (
     <div className="chat-window">
-      <Input autoFocus={true} placeholder='Nachricht' value={message} onChange={(e)=>setMessage(e.target.value)} onKeyUp={handleKeyPress}></Input>
+      <Input maxLength={150} autoFocus={true} placeholder='Nachricht' value={message} onChange={(e)=>setMessage(e.target.value)} onKeyUp={handleKeyPress}></Input>
       <Button className='chat-button' onClick={()=>handleSendMessage()}>Senden</Button>
       {props.chatMessages.slice(-5).map((msg, index) => (<p className='chat-msg' key={index}><b>{msg.name+" (" + msg.size + "): "}</b>{msg.message}</p>))}
     </div>

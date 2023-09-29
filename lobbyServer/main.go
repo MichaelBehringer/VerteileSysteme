@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"strings"
 
@@ -12,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+var colors []string
 
 type Player struct {
 	ID       uuid.UUID `json:"id"`
@@ -23,6 +26,11 @@ type CustomPlayer struct {
 	Skin     string `json:"skin"`
 	Username string `json:"username"`
 	Gamename string `json:"gamename"`
+}
+
+type NewPlayer struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type Server struct {
@@ -69,6 +77,12 @@ func main() {
 	InitDB()
 	defer CloseDB()
 
+	colors = []string{
+		"red", "green", "blue", "yellow", "maroon", "purple", "lime", "olive", "teal", "aqua",
+		"orange", "pink", "brown", "gray", "beige", "fuchsia", "cyan", "magenta", "violet", "indigo",
+		"navy", "silver", "gold", "hotPink", "turquoise", "lavender", "plum", "coral", "azure", "salmon",
+	}
+
 	r := gin.New()
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
@@ -106,6 +120,19 @@ func main() {
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
+	})
+
+	r.PUT("/user", func(c *gin.Context) {
+		var player NewPlayer
+		c.BindJSON(&player)
+		var isAllowed bool
+		ExecuteSQLRow("SELECT COUNT(*) FROM Player WHERE USERNAME=?", player.Username).Scan(&isAllowed)
+		if isAllowed {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		ExecuteDDL("INSERT INTO Player (ID, Username, Gamename, Skin, Passwort) VALUES(?, ?, ?, ?, ?)", uuid.New(), player.Username, player.Username, colors[rand.Intn(30)], player.Password)
+		c.Status(http.StatusOK)
 	})
 
 	fmt.Println("Lobby-Server started. Port: 8081")

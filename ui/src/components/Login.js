@@ -1,14 +1,41 @@
 import React, { useState } from "react";
-import { Button, Input } from "antd";
+import { Button, Input, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
-import { doCustomPostRequest } from "../helper/RequestHelper";
-import { myToastError } from "../helper/ToastHelper";
+import { doCustomPostRequest, doPutRequestAuth } from "../helper/RequestHelper";
+import { myToastError, myToastSuccess } from "../helper/ToastHelper";
 
 function Login(props) {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  
+  const [usernameReg, setUsernameReg] = useState("");
+  const [passwordReg, setPasswordReg] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleReg = () => {
+    const params = {username: usernameReg, password: passwordReg};
+    doPutRequestAuth("user", params, props.token).then(() => {
+      myToastSuccess('Anlegen erfolgreich');
+      setUsernameReg("")
+      setPasswordReg("")
+      setIsModalOpen(false);
+		}, error => {
+			if (error.response.status === 400) {
+				myToastError("Username bereits vorhanden!");
+			} else {
+        myToastError("Fehler!");
+      }
+			return error;
+		});
+  };
+
+  const openModal = () => {
+    setUsername("")
+    setPassword("")
+    setIsModalOpen(true);
+  };
 
   // Funktion, die aufgerufen wird, wenn der Benutzer sich einloggt
   const handleLogin = () => {
@@ -26,6 +53,21 @@ function Login(props) {
 
   return (
     <div className="login-container">
+      <Modal title="Registrieren" open={isModalOpen} onOk={()=>handleReg()} onCancel={()=>setIsModalOpen(false)}>
+      <Input
+        placeholder="Benutzername"
+        value={usernameReg}
+        onChange={(e) => setUsernameReg(e.target.value)}
+        style={{ marginBottom: "10px" }}
+      />
+      <Input
+        type="password"
+        placeholder="Passwort"
+        value={passwordReg}
+        onChange={(e) => setPasswordReg(e.target.value)}
+        style={{ marginBottom: "10px" }}
+      />
+      </Modal>
       <h2 style={{ color: "white" }}>Login</h2>
       <Input
         placeholder="Benutzername"
@@ -42,6 +84,9 @@ function Login(props) {
       />
       <Button type="primary" onClick={handleLogin}>
         Einloggen
+      </Button>
+      <Button type="primary" onClick={()=>openModal()}>
+        Registrieren
       </Button>
     </div>
   );

@@ -9,7 +9,7 @@ function HighscoreList(props) {
   return (
     <ul className="highscore-list">
       {props.highscores.map((score, index) => (
-        <li key={index}>
+        <li className='chat-msg' key={index}>
           {score.name}, {Math.round(score.highscore)}
         </li>
       ))}

@@ -47,12 +47,12 @@ function MyCircleSocket(props) {
   }, [lastMessage]);
 
   return (<>
+    <Gamefield cameraPosition={cameraPosition} playerObject={playerObject} otherPlayerObjects={otherPlayerObjects} npcObjects={npcObjects} width={width} height={height} sendMessage={sendMessage}/>
     <div className="highscore-list">
         👑 Gameserver Scores 👑 <br/>
         • Name, Score: <br/>
         <HighscoreList highscores={gameServerScores} />
     </div>
-    <Gamefield cameraPosition={cameraPosition} playerObject={playerObject} otherPlayerObjects={otherPlayerObjects} npcObjects={npcObjects} width={width} height={height} sendMessage={sendMessage}/>
     <Chat chatMessages={chatMessages} sendMessage={sendMessage}/>
     </>
   );

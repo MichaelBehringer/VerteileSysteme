@@ -85,6 +85,23 @@ h1 {
   padding: 12px 24px;
 }
 
+.chat-window {
+  position: absolute;
+  top: 50px;
+  left: 10px; 
+  color: white;
+  padding: 12px 24px;
+  width: 200px;
+}
+
+.chat-button {
+  margin-left: 0px;
+}
+
+.chat-msg {
+  word-wrap: break-word;
+}
+
 .button {
   position: relative;
   display: block;

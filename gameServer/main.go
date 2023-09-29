@@ -39,11 +39,26 @@ type targetObj struct {
 	Y float64 `json:"y"`
 }
 
+type socketMode struct {
+	Mode string `json:"mode"`
+}
+
+type socketMessage struct {
+	Message string `json:"message"`
+}
+
+type transfairChatMessage struct {
+	Name    string `json:"name"`
+	Message string `json:"message"`
+	Size    int    `json:"size"`
+}
+
 type finalTransfairObj struct {
-	Player      transfairPlayer   `json:"player"`
-	OtherPlayer []transfairPlayer `json:"otherPlayer"`
-	NPC         []transfairNpc    `json:"npc"`
-	Score       []transfairScore  `json:"score"`
+	Player      transfairPlayer        `json:"player"`
+	OtherPlayer []transfairPlayer      `json:"otherPlayer"`
+	NPC         []transfairNpc         `json:"npc"`
+	Score       []transfairScore       `json:"score"`
+	Message     []transfairChatMessage `json:"message"`
 }
 
 type transfairPlayer struct {
@@ -76,6 +91,7 @@ var listPlayerKoordinates [30]gameObj
 var listNpcKoordinates [1200]gameObj
 var arrPlayerTarget [30]targetObj
 var mapIdToPlayer map[uuid.UUID]int
+var listMessages []transfairChatMessage
 
 var stack *Stack
 var playerCounter int
@@ -185,10 +201,19 @@ func handleWebSocketConnection(w http.ResponseWriter, r *http.Request, token str
 		if messageType == -1 {
 			break
 		}
+		socketMode := socketMode{}
+		json.Unmarshal([]byte(message), &socketMode)
+		if socketMode.Mode == "pos" {
+			koordinates := targetObj{}
+			json.Unmarshal([]byte(message), &koordinates)
+			arrPlayerTarget[playerId] = koordinates
+		} else {
+			socketMessage := socketMessage{}
+			json.Unmarshal([]byte(message), &socketMessage)
+			msg := transfairChatMessage{Name: username, Message: socketMessage.Message, Size: int(listPlayerKoordinates[playerId].Size)}
+			listMessages = append(listMessages, msg)
+		}
 
-		koordinates := targetObj{}
-		json.Unmarshal([]byte(message), &koordinates)
-		arrPlayerTarget[playerId] = koordinates
 	}
 }
 
@@ -283,13 +308,20 @@ func sendUpdate() {
 		sendNpcUpdate := count%25 == 0
 		sendScoreUpdate := count%200 == 0
 
+		var objTransfairMessage []transfairChatMessage
+		if sendNpcUpdate && len(listMessages) > 0 {
+			objTransfairMessage = make([]transfairChatMessage, len(listMessages))
+			copy(objTransfairMessage, listMessages)
+			listMessages = []transfairChatMessage{}
+		}
+
 		for _, singleConn := range listConnections {
-			go sendSingleUpdate(singleConn, sendNpcUpdate, sendScoreUpdate)
+			go sendSingleUpdate(singleConn, sendNpcUpdate, sendScoreUpdate, objTransfairMessage)
 		}
 	}
 }
 
-func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpdate bool) {
+func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpdate bool, objTransfairMessage []transfairChatMessage) {
 	var objPlayerT transfairPlayer
 	var objOtherPlayerT []transfairPlayer
 
@@ -312,7 +344,7 @@ func sendSingleUpdate(singleConn connectionObj, sendNpcUpdate bool, sendScoreUpd
 	if sendScoreUpdate {
 		objTransfairScore = getScore(objPlayerT)
 	}
-	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objTransfairNpc, Score: objTransfairScore}
+	finalObjT := finalTransfairObj{Player: objPlayerT, OtherPlayer: objOtherPlayerT, NPC: objTransfairNpc, Score: objTransfairScore, Message: objTransfairMessage}
 	singleConn.ConnMutex.Lock()
 	singleConn.Conn.WriteJSON(finalObjT)
 	singleConn.ConnMutex.Unlock()

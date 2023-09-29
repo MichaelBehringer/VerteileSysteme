@@ -17,4 +17,4 @@ function HighscoreList(props) {
   );
 }
 
-export default HighscoreList;
+export default React.memo(HighscoreList);

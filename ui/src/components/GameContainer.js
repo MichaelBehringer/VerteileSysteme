@@ -1,13 +1,13 @@
 import { useParams } from 'react-router';
 import { baseUrl } from '../helper/RequestHelper';
-import MyCircleSocket from './MyCircleSocket';
+import WebsocketContainer from './WebsocketContainer';
 
 function GameContainer(props) {
   const { id } = useParams();
   if(id==="random") {
-    return (<MyCircleSocket token={props.token} serverUrl={"ws://"+baseUrl+"/randGame/ws"}/>);
+    return (<WebsocketContainer token={props.token} serverUrl={"ws://"+baseUrl+"/randGame/ws"}/>);
   } else {
-    return (<MyCircleSocket token={props.token} serverUrl={"ws://"+baseUrl+"/game/"+id+"/ws"}/>);
+    return (<WebsocketContainer token={props.token} serverUrl={"ws://"+baseUrl+"/game/"+id+"/ws"}/>);
   }
 }
 

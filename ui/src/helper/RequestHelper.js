@@ -1,5 +1,6 @@
 import axios from "axios";
 
+//Load enpdoint url dynamic from url of the browser
 export const baseUrl = window.location.hostname
 const url = "http://"+baseUrl+"/lobby/"
 
